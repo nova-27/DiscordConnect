@@ -1,0 +1,5 @@
+name: DiscordConnect
+version: ${project.version}
+main: com.github.nova_27.mcplugin.discordconnect.DiscordConnect
+softDepend: [N8ChatCaster, ]
+depends: [DiscordBotAPI]
