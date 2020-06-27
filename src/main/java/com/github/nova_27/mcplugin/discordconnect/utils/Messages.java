@@ -15,11 +15,9 @@ public enum Messages {
     proxyStarted,
     proxyStopped,
 
-    toMinecraft,
-    toDiscord,
-
     joined,
     left,
+    serverSwitched,
 
     ServerEnabled,
     ServerDisabled,

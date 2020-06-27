@@ -1,7 +1,7 @@
 package com.github.nova_27.mcplugin.discordconnect.listener;
 
+import com.github.nova_27.mcplugin.discordconnect.ConfigData;
 import com.github.nova_27.mcplugin.discordconnect.DiscordConnect;
-import com.github.nova_27.mcplugin.discordconnect.utils.Messages;
 import com.gmail.necnionch.myapp.markdownconverter.MarkComponent;
 import com.gmail.necnionch.myapp.markdownconverter.MarkdownConverter;
 import net.dv8tion.jda.core.events.Event;
@@ -25,9 +25,9 @@ public class DiscordEvent implements Predicate<Event> {
             MessageReceivedEvent message = (MessageReceivedEvent) event;
             if(message.getAuthor().isBot()) return false;
             if(message.getGuild() == null) return false;
-            if(message.getChannel().getIdLong() != DiscordConnect.CHANNELID) return false;
+            if(message.getChannel().getIdLong() != ConfigData.mainChannelID) return false;
 
-            String prefix = DiscordConnect.PREFIX;
+            String prefix = ConfigData.prefix;
             if (message.getMessage().getContentRaw().startsWith(prefix)) {
                 //コマンド TODO
                 String command = message.getMessage().getContentRaw().replace(prefix, "").split("\\s+")[0];
@@ -43,7 +43,7 @@ public class DiscordEvent implements Predicate<Event> {
                 TextComponent[] converted_message = MarkdownConverter.toMinecraftMessage(components);
 
                 TextComponent[] send = new TextComponent[converted_message.length + 1];
-                send[0] = new TextComponent(Messages.toMinecraft.toString().replace("{name}", message.getAuthor().getName()));
+                send[0] = new TextComponent(ConfigData.toMinecraft.toString().replace("{name}", message.getAuthor().getName()));
                 System.arraycopy(converted_message, 0, send, 1, converted_message.length);
 
                 ProxyServer.getInstance().broadcast(send);

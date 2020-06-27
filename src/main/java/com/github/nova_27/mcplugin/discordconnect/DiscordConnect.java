@@ -28,11 +28,6 @@ public final class DiscordConnect extends Plugin {
     //bot関係
     private Bot bot;
     private DiscordSender main_channel;
-    private static String TOKEN;
-    public static long CHANNELID;
-    public static String PREFIX;
-
-    public static String playingGame;
 
     //その他
     private N8ChatCasterAPI chatCasterApi = null;
@@ -149,24 +144,33 @@ public final class DiscordConnect extends Plugin {
         try {
             //config取得
             Configuration plugin_configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(plugin_config);
-            TOKEN = plugin_configuration.getString("Token");
-            CHANNELID = plugin_configuration.getLong("ChannelID");
-            PREFIX = plugin_configuration.getString("Prefix");
-            playingGame = plugin_configuration.getString("PlayingGame");
+            String TOKEN = plugin_configuration.getString("Token");
+            ConfigData.mainChannelID = plugin_configuration.getLong("ChannelID");
+            ConfigData.prefix = plugin_configuration.getString("Prefix");
+
+            ConfigData.toMinecraft = plugin_configuration.getString("toMinecraft");
+            ConfigData.toDiscord = plugin_configuration.getString("toDiscord");
+            ConfigData.playingGame = plugin_configuration.getString("PlayingGame");
 
             //ボット設定
-            bot = new Bot(TOKEN, PREFIX);
+            bot = new Bot(TOKEN, ConfigData.prefix);
             bot.setBotThread(new ThreadBungee(this));
             bot.setLoadAction(() -> {
                 DiscordConnect.getInstance().embed(Color.GREEN, Messages.proxyStarted.toString(), null);
                 main_channel.start();
 
-                setGame(playingGame.replace("{players}", String.valueOf(getProxy().getPlayers().size())));
+                int maxPlayerInt = getProxy().getConfig().getPlayerLimit();
+                String maxPlayer = maxPlayerInt != -1 ? String.valueOf(maxPlayerInt) : "∞";
+
+                setGame(ConfigData.playingGame
+                        .replace("{players}", String.valueOf(getProxy().getPlayers().size()))
+                        .replace("{max}", maxPlayer)
+                );
             });
             bot.addEvent(new DiscordEvent());
 
             //メッセージ送信クラス
-            main_channel = new DiscordSender(CHANNELID);
+            main_channel = new DiscordSender(ConfigData.mainChannelID);
         } catch (IOException e) {
             e.printStackTrace();
         }

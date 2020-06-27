@@ -15,13 +15,12 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
 import java.awt.*;
 import java.util.concurrent.TimeUnit;
-
-import static com.github.nova_27.mcplugin.discordconnect.DiscordConnect.playingGame;
 
 /**
  * BungeeCordイベントリスナー
@@ -56,7 +55,7 @@ public class BungeeEvent implements Listener {
             MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(message, '&');
             String output = MarkdownConverter.toDiscordMessage(components);
             DiscordConnect.getInstance().mainChannel_AddQueue(
-                    Messages.toDiscord.toString()
+                    com.github.nova_27.mcplugin.discordconnect.ConfigData.toDiscord.toString()
                     .replace("{server}", senderServer)
                     .replace("{sender}", sender.getName())
                     .replace("{message}", output)
@@ -159,11 +158,27 @@ public class BungeeEvent implements Listener {
     }
 
     /**
+     * サーバー間を移動したら
+     * @param e プレイヤー情報
+     */
+    @EventHandler
+    public void onSwitch(ServerSwitchEvent e) {
+        String name = e.getPlayer().getName();
+        DiscordConnect.getInstance().embed(Color.CYAN, Messages.serverSwitched.toString().replace("{name}", name).replace("{server}", e.getPlayer().getServer().getInfo().getName()), null);
+    }
+
+    /**
      * プレイヤー数情報を更新
      */
     private void updatePlayerCount() {
         DiscordConnect.getInstance().getProxy().getScheduler().schedule(DiscordConnect.getInstance(), () -> {
-            DiscordConnect.getInstance().setGame(playingGame.replace("{players}", String.valueOf(DiscordConnect.getInstance().getProxy().getPlayers().size())));
+            int maxPlayerInt = DiscordConnect.getInstance().getProxy().getConfig().getPlayerLimit();
+            String maxPlayer = maxPlayerInt != -1 ? String.valueOf(maxPlayerInt) : "∞";
+
+            DiscordConnect.getInstance().setGame(com.github.nova_27.mcplugin.discordconnect.ConfigData.playingGame
+                    .replace("{players}", String.valueOf(DiscordConnect.getInstance().getProxy().getPlayers().size()))
+                    .replace("{max}", maxPlayer)
+            );
         },1L, TimeUnit.SECONDS);
     }
 }

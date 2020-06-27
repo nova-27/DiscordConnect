@@ -2,4 +2,6 @@ Token: xxxx
 ChannelID: 000000000000000000
 Prefix: !
 
-PlayingGame: サーバー稼働中！（{players}人）
+toMinecraft: "§9[Discord] §f<{name}>"
+toDiscord: "*({server})* **{sender}** : {message}"
+PlayingGame: サーバー稼働中！（{players}/{max}人）
