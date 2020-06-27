@@ -1,3 +1,5 @@
 Token: xxxx
 ChannelID: 000000000000000000
 Prefix: !
+
+PlayingGame: サーバー稼働中！（{players}人）

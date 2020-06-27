@@ -1,6 +1,7 @@
 package com.github.nova_27.mcplugin.discordconnect.listener;
 
 import com.github.nova_27.mcplugin.discordconnect.DiscordConnect;
+import com.github.nova_27.mcplugin.servermanager.core.Smfb_core;
 import com.gmail.necnionch.myapp.markdownconverter.MarkComponent;
 import com.gmail.necnionch.myapp.markdownconverter.MarkdownConverter;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.events.GlobalChatEvent;
@@ -22,6 +23,6 @@ public class ChatCasterListener implements Listener {
         String message = DiscordConnect.getInstance().getChatCasterApi().formatMessageForDiscord(event);
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(message, '&');
         String output = MarkdownConverter.toDiscordMessage(components);
-        DiscordConnect.getInstance().sendToDiscord_sync(output);
+        DiscordConnect.getInstance().mainChannel_AddQueue(output);
     }
 }

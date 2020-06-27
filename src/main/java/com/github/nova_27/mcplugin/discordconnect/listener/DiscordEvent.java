@@ -25,7 +25,7 @@ public class DiscordEvent implements Predicate<Event> {
             MessageReceivedEvent message = (MessageReceivedEvent) event;
             if(message.getAuthor().isBot()) return false;
             if(message.getGuild() == null) return false;
-            if(message.getChannel().getIdLong() != DiscordConnect.getInstance().CHANNELID) return false;
+            if(message.getChannel().getIdLong() != DiscordConnect.CHANNELID) return false;
 
             String prefix = DiscordConnect.PREFIX;
             if (message.getMessage().getContentRaw().startsWith(prefix)) {

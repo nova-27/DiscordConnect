@@ -66,7 +66,7 @@ public class DiscordSender extends Thread {
                 //制限が2000文字なので1900文字で区切る
                 Matcher m = Pattern.compile("[\\s\\S]{1,1900}").matcher(Messages);
                 while (m.find()) {
-                    DiscordConnect.getInstance().sendToDiscord_sync(m.group());
+                    DiscordConnect.getInstance().sendToDiscord_sync(ChannelId, m.group());
                 }
             }
 

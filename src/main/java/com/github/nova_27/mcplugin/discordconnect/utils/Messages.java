@@ -14,10 +14,24 @@ import java.util.PropertyResourceBundle;
 public enum Messages {
     proxyStarted,
     proxyStopped,
+
     toMinecraft,
     toDiscord,
+
     joined,
-    left;
+    left,
+
+    ServerEnabled,
+    ServerDisabled,
+    ServerStarting,
+    ServerStopping,
+    ServerStarted,
+    ServerStopped,
+    ServerError,
+
+    TimerStarted,
+    TimerStopped,
+    TimerRestarted;
 
     /**
      * propertiesファイルからメッセージを取ってくる

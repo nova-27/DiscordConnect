@@ -108,5 +108,13 @@
             <scope>system</scope>
             <systemPath>${basedir}/libs/N8ChatCaster.jar</systemPath>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.nova_27.mcplugin.servermanager</groupId>
+            <artifactId>smfb-core</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/libs/SMFB_Core.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>
