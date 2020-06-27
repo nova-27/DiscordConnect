@@ -11,6 +11,7 @@ import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
 import com.tjplaysnow.discord.object.Bot;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -62,12 +63,29 @@ public final class DiscordConnect extends Plugin {
     }
 
     /**
+     * メインチャンネルのキューを追加する
+     * @param embed 送信埋め込みメッセージ
+     */
+    public void mainChannel_AddQueue(MessageEmbed embed) {
+        main_channel.add_queue(embed);
+    }
+
+    /**
      * 同期的にメッセージを送信する
      * @param channelID チャンネルID
      * @param text メッセージ
      */
     public void sendToDiscord_sync(long channelID, String text) {
         bot.getBot().getTextChannelById(channelID).sendMessage(text).complete();
+    }
+
+    /**
+     * 同期的に埋め込みメッセージを送信する
+     * @param channelID チャンネルID
+     * @param embed 埋め込みメッセージ
+     */
+    public void sendToDiscord_sync(long channelID, MessageEmbed embed) {
+        bot.getBot().getTextChannelById(channelID).sendMessage(embed).complete();
     }
 
     /**
@@ -161,14 +179,14 @@ public final class DiscordConnect extends Plugin {
     public void onDisable() {
         if (bot == null) return;
 
+        DiscordConnect.getInstance().embed(Color.RED, Messages.proxyStopped.toString(), null);
+
         main_channel.thread_stop();
         try {
             main_channel.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        DiscordConnect.getInstance().embed(Color.RED, Messages.proxyStopped.toString(), null);
     }
 
     /**
@@ -190,7 +208,7 @@ public final class DiscordConnect extends Plugin {
             }
         }
 
-        bot.getBot().getTextChannelById(CHANNELID).sendMessage(eb.build()).complete();
+        mainChannel_AddQueue(eb.build());
     }
 
     /**
