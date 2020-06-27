@@ -3,3 +3,4 @@ version: ${project.version}
 main: com.github.nova_27.mcplugin.discordconnect.DiscordConnect
 softDepends: [N8ChatCaster, SMFBCore]
 depends: [DiscordBotAPI]
+author: nova27
