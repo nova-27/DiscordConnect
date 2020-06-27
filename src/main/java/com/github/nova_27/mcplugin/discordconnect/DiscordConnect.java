@@ -3,9 +3,11 @@ package com.github.nova_27.mcplugin.discordconnect;
 import com.github.nova_27.mcplugin.discordconnect.listener.BungeeEvent;
 import com.github.nova_27.mcplugin.discordconnect.listener.ChatCasterListener;
 import com.github.nova_27.mcplugin.discordconnect.listener.DiscordEvent;
+import com.github.nova_27.mcplugin.discordconnect.listener.SMFBListener;
 import com.github.nova_27.mcplugin.discordconnect.utils.DiscordSender;
 import com.github.nova_27.mcplugin.discordconnect.utils.Messages;
 import com.github.nova_27.mcplugin.discordconnect.utils.ThreadBungee;
+import com.github.nova_27.mcplugin.servermanager.core.Smfb_core;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
 import com.tjplaysnow.discord.object.Bot;
@@ -16,6 +18,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import org.bstats.bungeecord.Metrics;
 
 import java.awt.*;
 import java.io.File;
@@ -90,8 +93,17 @@ public final class DiscordConnect extends Plugin {
     public void onEnable() {
         instance = this;
 
+        //bstats
+        new Metrics(this, 7990);
+
         //イベントを登録
         getProxy().getPluginManager().registerListener(this, new BungeeEvent());
+
+        //プラグイン連携 SMFB
+        Plugin temp1 = getProxy().getPluginManager().getPlugin("SMFBCore");
+        if(temp1 instanceof Smfb_core) {
+            getProxy().getPluginManager().registerListener(this, new SMFBListener());
+        }
 
         //プラグイン連携 N8ChatListener
         Plugin temp = getProxy().getPluginManager().getPlugin("N8ChatCaster");
