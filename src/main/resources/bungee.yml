@@ -1,6 +1,4 @@
 name: DiscordConnect
 version: ${project.version}
-main: com.github.nova_27.mcplugin.discordconnect.DiscordConnect
-softDepends: [N8ChatCaster, SMFBCore]
-depends: [DiscordBotAPI]
-author: nova27
+main: work.novablog.mcplugin.discordconnect.discordconnect
+description: Mutual chat transmission between Discord and Minecraft.
