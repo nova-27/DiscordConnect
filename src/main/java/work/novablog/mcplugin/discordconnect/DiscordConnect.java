@@ -2,7 +2,7 @@ package work.novablog.mcplugin.discordconnect;
 
 import net.md_5.bungee.api.plugin.Plugin;
 
-public final class discordconnect extends Plugin {
+public final class DiscordConnect extends Plugin {
 
     @Override
     public void onEnable() {

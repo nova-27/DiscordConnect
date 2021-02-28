@@ -59,6 +59,19 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-dv8fromtheworld-maven</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/dv8fromtheworld/maven</url>
+        </repository>
+        <repository>
+            <id>jcenter</id>
+            <name>bintray-jcenter</name>
+            <url>https://jcenter.bintray.com</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -67,6 +80,13 @@
             <artifactId>bungeecord-api</artifactId>
             <version>1.16-R0.4</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.dv8tion</groupId>
+            <artifactId>JDA</artifactId>
+            <version>4.2.0_229</version>
+            <type>pom</type>
         </dependency>
     </dependencies>
 </project>

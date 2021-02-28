@@ -1,4 +1,4 @@
 name: DiscordConnect
 version: ${project.version}
-main: work.novablog.mcplugin.discordconnect.discordconnect
+main: work.novablog.mcplugin.discordconnect.DiscordConnect
 description: Mutual chat transmission between Discord and Minecraft.
