@@ -1,0 +1,7 @@
+token: xxxx
+mainChannelID: 000000000000000000
+playingGameName: サーバー稼働中！（{players}/{max}人）
+
+#Prefix: !
+#toMinecraft: "§9[Discord] §f<{name}>"
+#toDiscord: "*({server})* **{sender}** : {message}"
