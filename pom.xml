@@ -86,7 +86,6 @@
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
             <version>4.2.0_229</version>
-            <type>pom</type>
         </dependency>
     </dependencies>
 </project>
