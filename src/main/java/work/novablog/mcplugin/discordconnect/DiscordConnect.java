@@ -1,9 +1,11 @@
 package work.novablog.mcplugin.discordconnect;
 
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
 
 import java.io.File;
@@ -71,6 +73,9 @@ public final class DiscordConnect extends Plugin {
         long main_channel_id = plugin_configuration.getLong("mainChannelID");
         String playing_game_name = plugin_configuration.getString("playingGameName");
         botManager = new BotManager(token, main_channel_id, playing_game_name);
+
+        //コマンドの追加
+        getProxy().getPluginManager().registerCommand(this, new BungeeMinecraftCommand());
     }
 
     @Override
