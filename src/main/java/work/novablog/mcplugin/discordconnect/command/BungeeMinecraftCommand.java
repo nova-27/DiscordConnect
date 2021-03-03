@@ -31,6 +31,7 @@ public class BungeeMinecraftCommand extends BungeeCommandExecutor {
     }
 
     public void reloadCmd(CommandSender sender, String[] args) {
-        sender.sendMessage(new TextComponent("未実装"));
+        DiscordConnect.getInstance().loadConfig();
+        sender.sendMessage(new TextComponent(Message.configReloaded.toString()));
     }
 }

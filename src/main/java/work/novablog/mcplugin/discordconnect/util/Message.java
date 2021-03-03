@@ -22,7 +22,9 @@ public enum Message {
     
     bungeeCommand_help_line1,
     bungeeCommand_help_helpcmd,
-    bungeeCommand_help_reloadcmd;
+    bungeeCommand_help_reloadcmd,
+
+    configReloaded;
 
     /**
      * propertiesファイルからメッセージを取ってくる
@@ -30,14 +32,6 @@ public enum Message {
      */
     @Override
     public String toString() {
-        try {
-            File message_file = new File(DiscordConnect.getInstance().getDataFolder(), "message.yml");
-            InputStreamReader fileReader = new InputStreamReader(new FileInputStream(message_file), StandardCharsets.UTF_8);
-            BufferedReader reader = new BufferedReader(fileReader);
-
-            return new PropertyResourceBundle(reader).getString(name());
-        }catch (IOException e) {
-            return "";
-        }
+        return DiscordConnect.getInstance().getLangFile().getString(name());
     }
 }

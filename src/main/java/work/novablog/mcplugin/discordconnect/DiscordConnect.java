@@ -8,15 +8,17 @@ import net.md_5.bungee.config.YamlConfiguration;
 import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.PropertyResourceBundle;
 
 public final class DiscordConnect extends Plugin {
     private static DiscordConnect instance;
     private BotManager botManager;
+    private PropertyResourceBundle messages;
 
     /**
      * インスタンスを返す
@@ -26,9 +28,30 @@ public final class DiscordConnect extends Plugin {
         return instance;
     }
 
+    /**
+     * 言語データを返す
+     * @return 言語データ
+     */
+    public PropertyResourceBundle getLangFile() {
+        return messages;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
+
+        //configの読み込み
+        loadConfig();
+
+        //コマンドの追加
+        getProxy().getPluginManager().registerCommand(this, new BungeeMinecraftCommand());
+    }
+
+    public void loadConfig() {
+        if(botManager != null) {
+            botManager.botShutdown();
+            botManager = null;
+        }
 
         //設定フォルダ
         if (!getDataFolder().exists()) {
@@ -47,6 +70,16 @@ public final class DiscordConnect extends Plugin {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        //Messageの準備
+        try {
+            File message_file = new File(getDataFolder(), "message.yml");
+            InputStreamReader fileReader = new InputStreamReader(new FileInputStream(message_file), StandardCharsets.UTF_8);
+            BufferedReader reader = new BufferedReader(Objects.requireNonNull(fileReader));
+            messages = new PropertyResourceBundle(reader);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         //configファイル
@@ -73,9 +106,6 @@ public final class DiscordConnect extends Plugin {
         long main_channel_id = plugin_configuration.getLong("mainChannelID");
         String playing_game_name = plugin_configuration.getString("playingGameName");
         botManager = new BotManager(token, main_channel_id, playing_game_name);
-
-        //コマンドの追加
-        getProxy().getPluginManager().registerCommand(this, new BungeeMinecraftCommand());
     }
 
     @Override
