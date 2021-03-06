@@ -36,6 +36,14 @@ public final class DiscordConnect extends Plugin {
         return messages;
     }
 
+    /**
+     * Botマネージャーを返す
+     * @return botマネージャー
+     */
+    public BotManager getBotManager() {
+        return botManager;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
@@ -105,7 +113,8 @@ public final class DiscordConnect extends Plugin {
         String token = plugin_configuration.getString("token");
         long main_channel_id = plugin_configuration.getLong("mainChannelID");
         String playing_game_name = plugin_configuration.getString("playingGameName");
-        botManager = new BotManager(token, main_channel_id, playing_game_name);
+        String prefix = plugin_configuration.getString("prefix");
+        botManager = new BotManager(token, main_channel_id, playing_game_name, prefix);
     }
 
     @Override

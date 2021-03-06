@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
+import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 
 import javax.security.auth.login.LoginException;
 
@@ -22,8 +23,16 @@ public class BotManager implements EventListener {
 
     private boolean is_active = false;
 
-    public BotManager(String token, long main_channel_id, String playing_game_name) {
-        botLogin(token, main_channel_id, playing_game_name);
+    public BotManager(String token, long main_channel_id, String playing_game_name, String prefix) {
+        botLogin(token, main_channel_id, playing_game_name, prefix);
+    }
+
+    /**
+     * メインチャンネルへメッセージを送信
+     * @param mes メッセージ
+     */
+    public void sendMessageToMainChannel(String mes) {
+        main_channel_sender.addQueue(mes);
     }
 
     /**
@@ -31,14 +40,16 @@ public class BotManager implements EventListener {
      * @param token botのトークン
      * @param main_channel_id メインチャンネルのID
      * @param playing_game_name プレイ中のゲーム名
+     * @param prefix コマンドのプレフィックス
      */
-    public void botLogin(String token, long main_channel_id, String playing_game_name) {
+    public void botLogin(String token, long main_channel_id, String playing_game_name, String prefix) {
         //ログインする
         try {
             bot = JDABuilder.createDefault(token)
                     .setActivity(Activity.playing(playing_game_name))
                     .addEventListeners(this)
                     .build();
+            bot.addEventListener(new DiscordListener(main_channel_id, prefix));
         } catch (LoginException e) {
             DiscordConnect.getInstance().getLogger().severe(Message.invalidToken.toString());
             is_active = false;
