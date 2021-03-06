@@ -2,10 +2,6 @@ package work.novablog.mcplugin.discordconnect.util;
 
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.PropertyResourceBundle;
-
 /**
  * 多言語対応メッセージ
  */
@@ -16,13 +12,13 @@ public enum Message {
     normalShutdown,
     botIsReady,
 
-    bungeeCommand_denied,
-    bungeeCommand_notfound,
-    bungeeCommand_syntaxerror,
-    
-    bungeeCommand_help_line1,
-    bungeeCommand_help_helpcmd,
-    bungeeCommand_help_reloadcmd,
+    bungeeCommandDenied,
+    bungeeCommandNotFound,
+    bungeeCommandSyntaxError,
+
+    bungeeCommandHelpLine1,
+    bungeeCommandHelpHelpcmd,
+    bungeeCommandHelpReloadcmd,
 
     configReloaded;
 
@@ -32,6 +28,6 @@ public enum Message {
      */
     @Override
     public String toString() {
-        return DiscordConnect.getInstance().getLangFile().getString(name());
+        return DiscordConnect.getInstance().getLangData().getProperty(name());
     }
 }

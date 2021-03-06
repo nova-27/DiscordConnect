@@ -10,11 +10,11 @@ public class DiscordSender extends Thread{
     private final int QUEUE_BUF = 50;
 
     private TextChannel channel;
-    private int start_write = 0;
-    private int start_read = 0;
-    private Object[] queue = new Object[QUEUE_BUF];
+    private int startWrite = 0;
+    private int startRead = 0;
+    private final Object[] queue = new Object[QUEUE_BUF];
 
-    private boolean is_stopped = false;
+    private boolean isStopped = false;
 
     public DiscordSender(TextChannel channel) {
         this.channel = channel;
@@ -27,11 +27,11 @@ public class DiscordSender extends Thread{
     public void addQueue(String text) {
         if(text.equals("")) return;
 
-        queue[start_write] = text;
+        queue[startWrite] = text;
 
-        start_write++;
-        if (start_write >= QUEUE_BUF) {
-            start_write = 0;
+        startWrite++;
+        if (startWrite >= QUEUE_BUF) {
+            startWrite = 0;
         }
     }
 
@@ -40,11 +40,11 @@ public class DiscordSender extends Thread{
      * @param embed 送信する埋め込みメッセージ
      */
     public void addQueue(MessageEmbed embed) {
-        queue[start_write] = embed;
+        queue[startWrite] = embed;
 
-        start_write++;
-        if (start_write >= QUEUE_BUF) {
-            start_write = 0;
+        startWrite++;
+        if (startWrite >= QUEUE_BUF) {
+            startWrite = 0;
         }
     }
 
@@ -52,22 +52,22 @@ public class DiscordSender extends Thread{
      * スレッドを停止する
      */
     public void threadStop() {
-        is_stopped = true;
+        isStopped = true;
     }
 
     @Override
     public void run() {
-        while (!is_stopped || queue[start_read] != null) {
+        while (!isStopped || queue[startRead] != null) {
             StringBuilder Messages = new StringBuilder();
 
             //キューを読む（文字）
-            while (queue[start_read] != null && queue[start_read] instanceof String) {
-                Messages.append(queue[start_read]).append("\n");
-                queue[start_read] = null;
+            while (queue[startRead] != null && queue[startRead] instanceof String) {
+                Messages.append(queue[startRead]).append("\n");
+                queue[startRead] = null;
 
-                start_read++;
-                if (start_read >= QUEUE_BUF) {
-                    start_read = 0;
+                startRead++;
+                if (startRead >= QUEUE_BUF) {
+                    startRead = 0;
                 }
             }
 
@@ -80,13 +80,13 @@ public class DiscordSender extends Thread{
             }
 
             //キューを読む（埋め込み）
-            while (queue[start_read] != null && queue[start_read] instanceof MessageEmbed) {
-                channel.sendMessage((MessageEmbed) queue[start_read]);
-                queue[start_read] = null;
+            while (queue[startRead] != null && queue[startRead] instanceof MessageEmbed) {
+                channel.sendMessage((MessageEmbed) queue[startRead]);
+                queue[startRead] = null;
 
-                start_read++;
-                if (start_read >= QUEUE_BUF) {
-                    start_read = 0;
+                startRead++;
+                if (startRead >= QUEUE_BUF) {
+                    startRead = 0;
                 }
             }
 

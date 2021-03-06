@@ -25,9 +25,9 @@ public class BungeeMinecraftCommand extends BungeeCommandExecutor {
     }
 
     public void helpCmd(CommandSender sender, String[] args) {
-        sender.sendMessage(new TextComponent(Message.bungeeCommand_help_line1.toString()));
-        sender.sendMessage(new TextComponent(Message.bungeeCommand_help_helpcmd.toString()));
-        sender.sendMessage(new TextComponent(Message.bungeeCommand_help_reloadcmd.toString()));
+        sender.sendMessage(new TextComponent(Message.bungeeCommandHelpLine1.toString()));
+        sender.sendMessage(new TextComponent(Message.bungeeCommandHelpHelpcmd.toString()));
+        sender.sendMessage(new TextComponent(Message.bungeeCommandHelpReloadcmd.toString()));
     }
 
     public void reloadCmd(CommandSender sender, String[] args) {

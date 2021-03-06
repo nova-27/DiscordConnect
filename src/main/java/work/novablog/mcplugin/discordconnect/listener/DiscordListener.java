@@ -11,11 +11,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.regex.Pattern;
 
 public class DiscordListener extends ListenerAdapter {
-    private final long main_channel_id;
+    private final long mainChannelId;
     private final String prefix;
 
-    public DiscordListener(long main_channel_id, String prefix) {
-        this.main_channel_id = main_channel_id;
+    public DiscordListener(long mainChannelId, String prefix) {
+        this.mainChannelId = mainChannelId;
         this.prefix = prefix;
     }
 
@@ -23,7 +23,7 @@ public class DiscordListener extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent message) {
         //メッセージを受け取ったら
         if(message.getAuthor().isBot()) return;
-        if(message.getChannel().getIdLong() != main_channel_id) return;
+        if(message.getChannel().getIdLong() != mainChannelId) return;
 
         if (message.getMessage().getContentRaw().startsWith(prefix)) {
             //コマンド TODO
@@ -37,11 +37,11 @@ public class DiscordListener extends ListenerAdapter {
         }else {
             //メッセージ
             MarkComponent[] components = MarkdownConverter.fromDiscordMessage(message.getMessage().getContentRaw());
-            TextComponent[] converted_message = MarkdownConverter.toMinecraftMessage(components);
+            TextComponent[] convertedMessage = MarkdownConverter.toMinecraftMessage(components);
 
-            TextComponent[] send = new TextComponent[converted_message.length + 1];
+            TextComponent[] send = new TextComponent[convertedMessage.length + 1];
             send[0] = new TextComponent(message.getAuthor().getName() + " : ");
-            System.arraycopy(converted_message, 0, send, 1, converted_message.length);
+            System.arraycopy(convertedMessage, 0, send, 1, convertedMessage.length);
 
             ProxyServer.getInstance().broadcast(send);
         }

@@ -18,13 +18,13 @@ import javax.security.auth.login.LoginException;
  */
 public class BotManager implements EventListener {
     private JDA bot;
-    private long main_channel_id;
-    private DiscordSender main_channel_sender;
+    private long mainChannelId;
+    private DiscordSender mainChannelSender;
 
-    private boolean is_active = false;
+    private boolean isActive = false;
 
-    public BotManager(String token, long main_channel_id, String playing_game_name, String prefix) {
-        botLogin(token, main_channel_id, playing_game_name, prefix);
+    public BotManager(String token, long mainChannelId, String playingGameName, String prefix) {
+        botLogin(token, mainChannelId, playingGameName, prefix);
     }
 
     /**
@@ -32,53 +32,53 @@ public class BotManager implements EventListener {
      * @param mes メッセージ
      */
     public void sendMessageToMainChannel(String mes) {
-        main_channel_sender.addQueue(mes);
+        mainChannelSender.addQueue(mes);
     }
 
     /**
      * botをログインする
      * @param token botのトークン
-     * @param main_channel_id メインチャンネルのID
-     * @param playing_game_name プレイ中のゲーム名
+     * @param mainChannelId メインチャンネルのID
+     * @param playingGameName プレイ中のゲーム名
      * @param prefix コマンドのプレフィックス
      */
-    public void botLogin(String token, long main_channel_id, String playing_game_name, String prefix) {
+    public void botLogin(String token, long mainChannelId, String playingGameName, String prefix) {
         //ログインする
         try {
             bot = JDABuilder.createDefault(token)
-                    .setActivity(Activity.playing(playing_game_name))
+                    .setActivity(Activity.playing(playingGameName))
                     .addEventListeners(this)
                     .build();
-            bot.addEventListener(new DiscordListener(main_channel_id, prefix));
+            bot.addEventListener(new DiscordListener(mainChannelId, prefix));
         } catch (LoginException e) {
             DiscordConnect.getInstance().getLogger().severe(Message.invalidToken.toString());
-            is_active = false;
+            isActive = false;
             return;
         }
 
-        this.main_channel_id = main_channel_id;
-        is_active = true;
+        this.mainChannelId = mainChannelId;
+        isActive = true;
     }
 
     /**
      * botをシャットダウンする
      */
     public void botShutdown() {
-        if(is_active) {
+        if(isActive) {
             //メインチャンネルスレッドの停止
             DiscordConnect.getInstance().getLogger().info(Message.normalShutdown.toString());
-            main_channel_sender.threadStop();
+            mainChannelSender.threadStop();
             try {
-                main_channel_sender.join();
+                mainChannelSender.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            main_channel_sender = null;
+            mainChannelSender = null;
 
             //botのシャットダウン
             bot.shutdown();
             bot = null;
-            is_active = false;
+            isActive = false;
         }
     }
 
@@ -88,18 +88,18 @@ public class BotManager implements EventListener {
             //Botのログインが完了
 
             //メインチャンネルを探す
-            TextChannel main_channel = bot.getTextChannelById(main_channel_id);
-            if(main_channel == null) {
+            TextChannel mainChannel = bot.getTextChannelById(mainChannelId);
+            if(mainChannel == null) {
                 //見つからなかったら
                 DiscordConnect.getInstance().getLogger().severe(Message.mainChannelNotFound.toString());
                 DiscordConnect.getInstance().getLogger().severe(Message.shutdownDueToError.toString());
                 bot.shutdown();
                 bot = null;
-                is_active = false;
+                isActive = false;
                 return;
             }
-            main_channel_sender = new DiscordSender(main_channel);
-            main_channel_sender.start();
+            mainChannelSender = new DiscordSender(mainChannel);
+            mainChannelSender.start();
 
             DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
         }

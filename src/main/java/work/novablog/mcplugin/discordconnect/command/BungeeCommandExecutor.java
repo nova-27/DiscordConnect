@@ -47,7 +47,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
     public void execute(CommandSender commandSender, String[] args) {
         //権限の確認
         if(!commandSender.hasPermission(permission)) {
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommand_denied.toString()));
+            commandSender.sendMessage(new TextComponent(Message.bungeeCommandDenied.toString()));
             return;
         }
         //引数の確認
@@ -67,13 +67,13 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
             }
         }
         if(execCmd == null) {
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommand_notfound.toString()));
+            commandSender.sendMessage(new TextComponent(Message.bungeeCommandNotFound.toString()));
             return;
         }
 
         //権限の確認
         if (execCmd.subPermission != null && !commandSender.hasPermission(execCmd.subPermission)) {
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommand_denied.toString()));
+            commandSender.sendMessage(new TextComponent(Message.bungeeCommandDenied.toString()));
             return;
         }
 
@@ -82,7 +82,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
 
         //引数の確認
         if(commandArgs.length < execCmd.requireArgs) {
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommand_syntaxerror.toString()));
+            commandSender.sendMessage(new TextComponent(Message.bungeeCommandSyntaxError.toString()));
             return;
         }
 

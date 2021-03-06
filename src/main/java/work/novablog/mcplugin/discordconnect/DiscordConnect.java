@@ -1,6 +1,5 @@
 package work.novablog.mcplugin.discordconnect;
 
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -13,12 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.PropertyResourceBundle;
+import java.util.Properties;
 
 public final class DiscordConnect extends Plugin {
     private static DiscordConnect instance;
     private BotManager botManager;
-    private PropertyResourceBundle messages;
+    private Properties langData;
 
     /**
      * インスタンスを返す
@@ -32,8 +31,8 @@ public final class DiscordConnect extends Plugin {
      * 言語データを返す
      * @return 言語データ
      */
-    public PropertyResourceBundle getLangFile() {
-        return messages;
+    public Properties getLangData() {
+        return langData;
     }
 
     /**
@@ -67,14 +66,14 @@ public final class DiscordConnect extends Plugin {
         }
 
         //言語ファイル
-        File language_file = new File(getDataFolder(), "message.yml");
-        if (!language_file.exists()) {
+        File languageFile = new File(getDataFolder(), "message.yml");
+        if (!languageFile.exists()) {
             //存在しなければコピー
             InputStream src = getResourceAsStream(Locale.getDefault().toString() + ".properties");
             if(src == null) src = getResourceAsStream("ja_JP.properties");
 
             try {
-                Files.copy(src, language_file.toPath());
+                Files.copy(src, languageFile.toPath());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -82,39 +81,39 @@ public final class DiscordConnect extends Plugin {
 
         //Messageの準備
         try {
-            File message_file = new File(getDataFolder(), "message.yml");
-            InputStreamReader fileReader = new InputStreamReader(new FileInputStream(message_file), StandardCharsets.UTF_8);
-            BufferedReader reader = new BufferedReader(Objects.requireNonNull(fileReader));
-            messages = new PropertyResourceBundle(reader);
+            InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(languageFile), StandardCharsets.UTF_8);
+            BufferedReader bufferedReader = new BufferedReader(Objects.requireNonNull(inputStreamReader));
+            langData = new Properties();
+            langData.load(bufferedReader);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         //configファイル
-        File plugin_config = new File(getDataFolder(), "config.yml");
-        if (!plugin_config.exists()) {
+        File pluginConfig = new File(getDataFolder(), "config.yml");
+        if (!pluginConfig.exists()) {
             //存在しなければコピー
             InputStream src = getResourceAsStream("config.yml");
 
             try {
-                Files.copy(src, plugin_config.toPath());
+                Files.copy(src, pluginConfig.toPath());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
         //config取得・bot起動
-        Configuration plugin_configuration = null;
+        Configuration pluginConfiguration = null;
         try {
-            plugin_configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(plugin_config);
+            pluginConfiguration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(pluginConfig);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String token = plugin_configuration.getString("token");
-        long main_channel_id = plugin_configuration.getLong("mainChannelID");
-        String playing_game_name = plugin_configuration.getString("playingGameName");
-        String prefix = plugin_configuration.getString("prefix");
-        botManager = new BotManager(token, main_channel_id, playing_game_name, prefix);
+        String token = pluginConfiguration.getString("token");
+        long mainChannelId = pluginConfiguration.getLong("mainChannelID");
+        String playingGameName = pluginConfiguration.getString("playingGameName");
+        String prefix = pluginConfiguration.getString("prefix");
+        botManager = new BotManager(token, mainChannelId, playingGameName, prefix);
     }
 
     @Override
