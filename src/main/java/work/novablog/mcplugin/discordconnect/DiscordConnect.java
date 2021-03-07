@@ -1,13 +1,17 @@
 package work.novablog.mcplugin.discordconnect;
 
+import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
+import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
+import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -21,6 +25,8 @@ public final class DiscordConnect extends Plugin {
     private BotManager botManager;
     private Properties langData;
     private BungeeListener bungeeListener;
+    private N8ChatCasterAPI chatCasterAPI;
+    private ChatCasterListener chatCasterListener;
 
     /**
      * インスタンスを返す
@@ -54,9 +60,32 @@ public final class DiscordConnect extends Plugin {
         return bungeeListener;
     }
 
+    /**
+     * ChatCasterAPIを返す
+     * @return chatCasterAPI
+     */
+    public @Nullable N8ChatCasterAPI getChatCasterAPI() {
+        return chatCasterAPI;
+    }
+
+    /**
+     * ChatCasterListenerを返す
+     * @return chatCasterListener
+     */
+    public ChatCasterListener getChatCasterListener() {
+        return chatCasterListener;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
+
+        //N8ChatCasterと連携
+        Plugin temp = getProxy().getPluginManager().getPlugin("N8ChatCaster");
+        if (temp instanceof N8ChatCasterPlugin) {
+            chatCasterAPI = (((N8ChatCasterPlugin) temp).getChatCasterApi());
+            chatCasterListener = new ChatCasterListener();
+        }
 
         //configの読み込み
         loadConfig();

@@ -2,6 +2,7 @@ package work.novablog.mcplugin.discordconnect.listener;
 
 import com.gmail.necnionch.myapp.markdownconverter.MarkComponent;
 import com.gmail.necnionch.myapp.markdownconverter.MarkdownConverter;
+import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.LoginEvent;
@@ -25,8 +26,8 @@ public class BungeeListener implements Listener {
         //コマンドなら
         if(event.isCommand() || event.isCancelled() || !(event.getSender() instanceof ProxiedPlayer)) return;
 
-        //N8ChatCasterAPI chatCasterApi = DiscordConnect.getInstance().getChatCasterApi();
-        //if (chatCasterApi == null || !chatCasterApi.isEnabledChatCaster()) {
+        N8ChatCasterAPI chatCasterApi = DiscordConnect.getInstance().getChatCasterAPI();
+        if (chatCasterApi == null || !chatCasterApi.isEnabledChatCaster()) {
             // 連携プラグインが無効の場合
             ProxiedPlayer sender = (ProxiedPlayer)event.getSender();
             String senderServer = sender.getServer().getInfo().getName();
@@ -39,7 +40,7 @@ public class BungeeListener implements Listener {
                             .replace("{sender}", sender.getName())
                             .replace("{message}", convertedMessage)
             );
-        //}
+        }
     }
 
     /**

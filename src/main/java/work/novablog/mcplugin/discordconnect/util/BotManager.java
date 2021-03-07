@@ -1,5 +1,6 @@
 package work.novablog.mcplugin.discordconnect.util;
 
+import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
+import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 
 import javax.security.auth.login.LoginException;
@@ -56,6 +58,8 @@ public class BotManager implements EventListener {
         if(isActive) {
             //メインチャンネルスレッドの停止
             DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(DiscordConnect.getInstance().getBungeeListener());
+            ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
+            if(chatCasterListener != null)  DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(chatCasterListener);
             DiscordConnect.getInstance().getLogger().info(Message.normalShutdown.toString());
             if(chatChannelSenders != null) {
                 chatChannelSenders.forEach(DiscordSender::threadStop);
@@ -103,6 +107,8 @@ public class BotManager implements EventListener {
             }
             chatChannelSenders.forEach(Thread::start);
             DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), DiscordConnect.getInstance().getBungeeListener());
+            ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
+            if(chatCasterListener != null) DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), chatCasterListener);
 
             DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
         }
