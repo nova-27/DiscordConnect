@@ -12,51 +12,37 @@ import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 
 import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DiscordBotの管理を行う
  */
 public class BotManager implements EventListener {
     private JDA bot;
-    private long mainChannelId;
-    private DiscordSender mainChannelSender;
+    private List<Long> chatChannelIds;
+    private List<DiscordSender> chatChannelSenders;
 
-    private boolean isActive = false;
+    private boolean isActive;
 
-    public BotManager(String token, long mainChannelId, String playingGameName, String prefix) {
-        botLogin(token, mainChannelId, playingGameName, prefix);
-    }
-
-    /**
-     * メインチャンネルへメッセージを送信
-     * @param mes メッセージ
-     */
-    public void sendMessageToMainChannel(String mes) {
-        mainChannelSender.addQueue(mes);
-    }
-
-    /**
-     * botをログインする
-     * @param token botのトークン
-     * @param mainChannelId メインチャンネルのID
-     * @param playingGameName プレイ中のゲーム名
-     * @param prefix コマンドのプレフィックス
-     */
-    public void botLogin(String token, long mainChannelId, String playingGameName, String prefix) {
+    public BotManager(String token, List<Long> chatChannelIds, String playingGameName, String prefix) {
         //ログインする
         try {
             bot = JDABuilder.createDefault(token)
                     .setActivity(Activity.playing(playingGameName))
                     .addEventListeners(this)
                     .build();
-            bot.addEventListener(new DiscordListener(mainChannelId, prefix));
+            bot.addEventListener(new DiscordListener(prefix));
         } catch (LoginException e) {
             DiscordConnect.getInstance().getLogger().severe(Message.invalidToken.toString());
+            bot = null;
             isActive = false;
             return;
         }
 
-        this.mainChannelId = mainChannelId;
+        this.chatChannelIds = chatChannelIds;
         isActive = true;
     }
 
@@ -67,17 +53,22 @@ public class BotManager implements EventListener {
         if(isActive) {
             //メインチャンネルスレッドの停止
             DiscordConnect.getInstance().getLogger().info(Message.normalShutdown.toString());
-            mainChannelSender.threadStop();
-            try {
-                mainChannelSender.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if(chatChannelSenders != null) {
+                chatChannelSenders.forEach(DiscordSender::threadStop);
+                chatChannelSenders.forEach(sender -> {
+                    try {
+                        sender.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
+                chatChannelSenders = null;
             }
-            mainChannelSender = null;
 
             //botのシャットダウン
             bot.shutdown();
             bot = null;
+            chatChannelIds = null;
             isActive = false;
         }
     }
@@ -87,21 +78,44 @@ public class BotManager implements EventListener {
         if(event instanceof ReadyEvent) {
             //Botのログインが完了
 
-            //メインチャンネルを探す
-            TextChannel mainChannel = bot.getTextChannelById(mainChannelId);
-            if(mainChannel == null) {
-                //見つからなかったら
+            //チャットチャンネルを探す
+            chatChannelSenders = chatChannelIds.stream()
+                    .map(id -> {
+                        TextChannel chatChannel = bot.getTextChannelById(id);
+                        if(chatChannel == null) {
+                            return null;
+                        }else{
+                            return new DiscordSender(chatChannel);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            if(chatChannelSenders.contains(null)) {
+                //無効なチャンネルがあれば
                 DiscordConnect.getInstance().getLogger().severe(Message.mainChannelNotFound.toString());
                 DiscordConnect.getInstance().getLogger().severe(Message.shutdownDueToError.toString());
+                chatChannelSenders = null;
                 bot.shutdown();
-                bot = null;
-                isActive = false;
                 return;
             }
-            mainChannelSender = new DiscordSender(mainChannel);
-            mainChannelSender.start();
+            chatChannelSenders.forEach(Thread::start);
 
             DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
         }
+    }
+
+    /**
+     * チャットチャンネルへメッセージを送信
+     * @param mes メッセージ
+     */
+    public void sendMessageToMainChannel(String mes) {
+        chatChannelSenders.forEach(sender -> sender.addQueue(mes));
+    }
+
+    /**
+     * チャットチャンネルのIDリストを取得
+     * @return IDリスト
+     */
+    public List<Long> getChatChannelIds() {
+        return chatChannelIds;
     }
 }

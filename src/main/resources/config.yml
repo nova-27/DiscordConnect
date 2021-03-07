@@ -1,5 +1,6 @@
 token: xxxx
-mainChannelID: 000000000000000000
+chatChannelIDs:
+- 000000000000000000
 playingGameName: サーバー稼働中！（{players}/{max}人）
 
 prefix: "!"

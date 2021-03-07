@@ -10,6 +10,7 @@ import work.novablog.mcplugin.discordconnect.util.BotManager;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
@@ -28,19 +29,19 @@ public final class DiscordConnect extends Plugin {
     }
 
     /**
-     * 言語データを返す
-     * @return 言語データ
-     */
-    public Properties getLangData() {
-        return langData;
-    }
-
-    /**
      * Botマネージャーを返す
      * @return botマネージャー
      */
     public BotManager getBotManager() {
         return botManager;
+    }
+
+    /**
+     * 言語データを返す
+     * @return 言語データ
+     */
+    public Properties getLangData() {
+        return langData;
     }
 
     @Override
@@ -110,10 +111,10 @@ public final class DiscordConnect extends Plugin {
             e.printStackTrace();
         }
         String token = pluginConfiguration.getString("token");
-        long mainChannelId = pluginConfiguration.getLong("mainChannelID");
+        List<Long> chatChannelIds = pluginConfiguration.getLongList("chatChannelIDs");
         String playingGameName = pluginConfiguration.getString("playingGameName");
         String prefix = pluginConfiguration.getString("prefix");
-        botManager = new BotManager(token, mainChannelId, playingGameName, prefix);
+        botManager = new BotManager(token, chatChannelIds, playingGameName, prefix);
     }
 
     @Override
