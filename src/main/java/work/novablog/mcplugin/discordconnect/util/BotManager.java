@@ -1,8 +1,10 @@
 package work.novablog.mcplugin.discordconnect.util;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.ReadyEvent;
@@ -12,6 +14,7 @@ import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 
 import javax.security.auth.login.LoginException;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +55,7 @@ public class BotManager implements EventListener {
     public void botShutdown() {
         if(isActive) {
             //メインチャンネルスレッドの停止
+            DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(DiscordConnect.getInstance().getBungeeListener());
             DiscordConnect.getInstance().getLogger().info(Message.normalShutdown.toString());
             if(chatChannelSenders != null) {
                 chatChannelSenders.forEach(DiscordSender::threadStop);
@@ -98,6 +102,7 @@ public class BotManager implements EventListener {
                 return;
             }
             chatChannelSenders.forEach(Thread::start);
+            DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), DiscordConnect.getInstance().getBungeeListener());
 
             DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
         }
@@ -107,8 +112,38 @@ public class BotManager implements EventListener {
      * チャットチャンネルへメッセージを送信
      * @param mes メッセージ
      */
-    public void sendMessageToMainChannel(String mes) {
+    public void sendMessageToChatChannel(String mes) {
         chatChannelSenders.forEach(sender -> sender.addQueue(mes));
+    }
+
+    /**
+     * チャットチャンネルへ埋め込みメッセージを送信
+     * @param title タイトル
+     * @param titleUrl タイトルのリンクURL
+     * @param desc 説明
+     * @param color 色
+     * @param embedFields フィールド
+     * @param author 送信者の名前
+     * @param authorUrl 送信者のリンクURL
+     * @param authorIcon 送信者のアイコン
+     * @param footer フッター
+     * @param footerIcon フッターのアイコン
+     * @param image 画像
+     * @param thumbnail サムネイル
+     */
+    public void sendMessageToChatChannel(String title, String titleUrl, String desc, Color color, List<MessageEmbed.Field> embedFields, String author, String authorUrl, String authorIcon, String footer, String footerIcon, String image, String thumbnail) {
+        EmbedBuilder eb = new EmbedBuilder();
+
+        eb.setTitle(title, titleUrl);
+        eb.setColor(color);
+        eb.setDescription(desc);
+        embedFields.forEach(eb::addField);
+        eb.setAuthor(author, authorUrl, authorIcon);
+        eb.setFooter(footer, footerIcon);
+        eb.setImage(image);
+        eb.setThumbnail(thumbnail);
+
+        chatChannelSenders.forEach(sender -> sender.addQueue(eb.build()));
     }
 
     /**

@@ -75,13 +75,13 @@ public class DiscordSender extends Thread{
                 //制限が2000文字なので1900文字で区切る
                 Matcher m = Pattern.compile("[\\s\\S]{1,1900}").matcher(Messages.toString());
                 while (m.find()) {
-                    channel.sendMessage(m.group());
+                    channel.sendMessage(m.group()).complete();
                 }
             }
 
             //キューを読む（埋め込み）
             while (queue[startRead] != null && queue[startRead] instanceof MessageEmbed) {
-                channel.sendMessage((MessageEmbed) queue[startRead]);
+                channel.sendMessage((MessageEmbed) queue[startRead]).complete();
                 queue[startRead] = null;
 
                 startRead++;

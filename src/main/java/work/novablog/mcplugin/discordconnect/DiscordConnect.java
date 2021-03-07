@@ -5,6 +5,7 @@ import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
+import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
 
 import java.io.*;
@@ -19,6 +20,7 @@ public final class DiscordConnect extends Plugin {
     private static DiscordConnect instance;
     private BotManager botManager;
     private Properties langData;
+    private BungeeListener bungeeListener;
 
     /**
      * インスタンスを返す
@@ -42,6 +44,14 @@ public final class DiscordConnect extends Plugin {
      */
     public Properties getLangData() {
         return langData;
+    }
+
+    /**
+     * BungeeListenerを返す
+     * @return BungeeListener
+     */
+    public BungeeListener getBungeeListener() {
+        return bungeeListener;
     }
 
     @Override
@@ -115,6 +125,8 @@ public final class DiscordConnect extends Plugin {
         String playingGameName = pluginConfiguration.getString("playingGameName");
         String prefix = pluginConfiguration.getString("prefix");
         String toMinecraftFormat = pluginConfiguration.getString("toMinecraftFormat");
+        String toDiscordFormat = pluginConfiguration.getString("toDiscordFormat");
+        bungeeListener = new BungeeListener(toDiscordFormat);
         botManager = new BotManager(token, chatChannelIds, playingGameName, prefix, toMinecraftFormat);
     }
 
