@@ -114,7 +114,8 @@ public final class DiscordConnect extends Plugin {
         List<Long> chatChannelIds = pluginConfiguration.getLongList("chatChannelIDs");
         String playingGameName = pluginConfiguration.getString("playingGameName");
         String prefix = pluginConfiguration.getString("prefix");
-        botManager = new BotManager(token, chatChannelIds, playingGameName, prefix);
+        String toMinecraftFormat = pluginConfiguration.getString("toMinecraftFormat");
+        botManager = new BotManager(token, chatChannelIds, playingGameName, prefix, toMinecraftFormat);
     }
 
     @Override

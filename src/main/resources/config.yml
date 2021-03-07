@@ -4,5 +4,5 @@ chatChannelIDs:
 playingGameName: サーバー稼働中！（{players}/{max}人）
 
 prefix: "!"
-#toMinecraft: "§9[Discord] §f<{name}>"
+toMinecraftFormat: "§9[Discord§7({channel_name})§9] §f<{name}>"
 #toDiscord: "*({server})* **{sender}** : {message}"

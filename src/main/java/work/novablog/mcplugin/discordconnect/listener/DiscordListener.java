@@ -14,9 +14,11 @@ import java.util.regex.Pattern;
 
 public class DiscordListener extends ListenerAdapter {
     private final String prefix;
+    private final String toMinecraftFormat;
 
-    public DiscordListener(String prefix) {
+    public DiscordListener(String prefix, String toMinecraftFormat) {
         this.prefix = prefix;
+        this.toMinecraftFormat = toMinecraftFormat;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class DiscordListener extends ListenerAdapter {
             TextComponent[] convertedMessage = MarkdownConverter.toMinecraftMessage(components);
 
             TextComponent[] send = new TextComponent[convertedMessage.length + 1];
-            send[0] = new TextComponent(message.getAuthor().getName() + " : ");
+            send[0] = new TextComponent(toMinecraftFormat.replace("{name}", message.getAuthor().getName()).replace("{channel_name}", message.getChannel().getName()));
             System.arraycopy(convertedMessage, 0, send, 1, convertedMessage.length);
 
             ProxyServer.getInstance().broadcast(send);

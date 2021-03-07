@@ -27,14 +27,14 @@ public class BotManager implements EventListener {
 
     private boolean isActive;
 
-    public BotManager(String token, List<Long> chatChannelIds, String playingGameName, String prefix) {
+    public BotManager(String token, List<Long> chatChannelIds, String playingGameName, String prefix, String toMinecraftFormat) {
         //ログインする
         try {
             bot = JDABuilder.createDefault(token)
                     .setActivity(Activity.playing(playingGameName))
                     .addEventListeners(this)
                     .build();
-            bot.addEventListener(new DiscordListener(prefix));
+            bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
         } catch (LoginException e) {
             DiscordConnect.getInstance().getLogger().severe(Message.invalidToken.toString());
             bot = null;
