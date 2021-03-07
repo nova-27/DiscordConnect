@@ -6,6 +6,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import org.bstats.bungeecord.Metrics;
 import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
@@ -79,6 +80,9 @@ public final class DiscordConnect extends Plugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        //bstats
+        new Metrics(this, 7990);
 
         //N8ChatCasterと連携
         Plugin temp = getProxy().getPluginManager().getPlugin("N8ChatCaster");
