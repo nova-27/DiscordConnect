@@ -58,6 +58,21 @@ public class BotManager implements EventListener {
     public void botShutdown() {
         if(isActive) {
             //メインチャンネルスレッドの停止
+            sendMessageToChatChannel(
+                    Message.serverActivity.toString(),
+                    null,
+                    Message.proxyStopped.toString(),
+                    new Color(102, 205, 170),
+                    new ArrayList<>(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
             DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(DiscordConnect.getInstance().getBungeeListener());
             ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
             if(chatCasterListener != null)  DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(chatCasterListener);
@@ -113,6 +128,20 @@ public class BotManager implements EventListener {
             DiscordConnect.getInstance().getBotManager().updateGameName(
                     DiscordConnect.getInstance().getProxy().getPlayers().size(),
                     DiscordConnect.getInstance().getProxy().getConfig().getPlayerLimit()
+            );
+            sendMessageToChatChannel(
+                    Message.serverActivity.toString(),
+                    null,
+                    Message.proxyStarted.toString(),
+                    new Color(102, 205, 170),
+                    new ArrayList<>(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
             );
 
             DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());

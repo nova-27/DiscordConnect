@@ -20,8 +20,12 @@ public enum Message {
     bungeeCommandHelpLine1,
     bungeeCommandHelpHelpcmd,
     bungeeCommandHelpReloadcmd,
-    userActivity,
 
+    userActivity,
+    serverActivity,
+
+    proxyStarted,
+    proxyStopped,
     joined,
     left,
     serverSwitched;
