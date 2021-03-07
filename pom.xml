@@ -47,7 +47,7 @@
             <resource>
                 <directory>${project.basedir}</directory>
                 <includes>
-                    <include>libs/*.jar</include>
+                    <include>libs/MarkdownConverter-1.1-SNAPSHOT-min.jar</include>
                 </includes>
             </resource>
         </resources>
@@ -93,6 +93,14 @@
             <version>1.1</version>
             <scope>system</scope>
             <systemPath>${basedir}/libs/MarkdownConverter-1.1-SNAPSHOT-min.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>com.gmail.necnionch</groupId>
+            <artifactId>n8charcaster</artifactId>
+            <version>1.1.4</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/libs/N8ChatCaster-1.1.4-SNAPSHOT.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
