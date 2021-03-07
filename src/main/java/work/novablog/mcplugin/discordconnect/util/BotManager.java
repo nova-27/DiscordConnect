@@ -29,6 +29,7 @@ public class BotManager implements EventListener {
     private JDA bot;
     private List<Long> chatChannelIds;
     private List<DiscordSender> chatChannelSenders;
+    private String playingGameName;
 
     private boolean isActive;
 
@@ -36,7 +37,6 @@ public class BotManager implements EventListener {
         //ログインする
         try {
             bot = JDABuilder.createDefault(token)
-                    .setActivity(Activity.playing(playingGameName))
                     .addEventListeners(this)
                     .build();
             bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
@@ -48,6 +48,7 @@ public class BotManager implements EventListener {
         }
 
         this.chatChannelIds = chatChannelIds;
+        this.playingGameName = playingGameName;
         isActive = true;
     }
 
@@ -109,6 +110,10 @@ public class BotManager implements EventListener {
             DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), DiscordConnect.getInstance().getBungeeListener());
             ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
             if(chatCasterListener != null) DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), chatCasterListener);
+            DiscordConnect.getInstance().getBotManager().updateGameName(
+                    DiscordConnect.getInstance().getProxy().getPlayers().size(),
+                    DiscordConnect.getInstance().getProxy().getConfig().getPlayerLimit()
+            );
 
             DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
         }
@@ -137,7 +142,7 @@ public class BotManager implements EventListener {
      * @param image 画像
      * @param thumbnail サムネイル
      */
-    public void sendMessageToChatChannel(String title, String titleUrl, String desc, Color color, List<MessageEmbed.Field> embedFields, String author, String authorUrl, String authorIcon, String footer, String footerIcon, String image, String thumbnail) {
+    public void sendMessageToChatChannel(String title, String titleUrl, String desc, Color color, @NotNull List<MessageEmbed.Field> embedFields, String author, String authorUrl, String authorIcon, String footer, String footerIcon, String image, String thumbnail) {
         EmbedBuilder eb = new EmbedBuilder();
 
         eb.setTitle(title, titleUrl);
@@ -158,5 +163,19 @@ public class BotManager implements EventListener {
      */
     public List<Long> getChatChannelIds() {
         return chatChannelIds;
+    }
+
+    /**
+     * プレイ中のゲーム名を更新
+     * @param playerCount プレイヤー数
+     * @param maxPlayers 最大プレイヤー数
+     */
+    public void updateGameName(int playerCount, int maxPlayers) {
+        String maxPlayersString = maxPlayers != -1 ? String.valueOf(maxPlayers) : "∞";
+
+        bot.getPresence().setActivity(
+                Activity.playing(playingGameName
+                        .replace("{players}", String.valueOf(playerCount))
+                        .replace("{max}", maxPlayersString)));
     }
 }

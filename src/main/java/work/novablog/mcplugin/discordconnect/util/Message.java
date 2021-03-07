@@ -11,6 +11,7 @@ public enum Message {
     shutdownDueToError,
     normalShutdown,
     botIsReady,
+    configReloaded,
 
     bungeeCommandDenied,
     bungeeCommandNotFound,
@@ -19,8 +20,11 @@ public enum Message {
     bungeeCommandHelpLine1,
     bungeeCommandHelpHelpcmd,
     bungeeCommandHelpReloadcmd,
+    userActivity,
 
-    configReloaded;
+    joined,
+    left,
+    serverSwitched;
 
     /**
      * propertiesファイルからメッセージを取ってくる
