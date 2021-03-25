@@ -32,12 +32,14 @@ public class BotManager implements EventListener {
     private String playingGameName;
 
     private boolean isActive;
+    private static boolean isRestarting;
 
     public BotManager(String token, List<Long> chatChannelIds, String playingGameName, String prefix, String toMinecraftFormat) {
         //ログインする
         try {
             bot = JDABuilder.createDefault(token)
                     .addEventListeners(this)
+                    .setAutoReconnect(true)
                     .build();
             bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
         } catch (LoginException e) {
@@ -54,10 +56,21 @@ public class BotManager implements EventListener {
 
     /**
      * botをシャットダウンする
+     * @param isRestart botの再起動(reload)か
      */
-    public void botShutdown() {
-        if(isActive) {
-            //メインチャンネルスレッドの停止
+    public void botShutdown(boolean isRestart) {
+        if(!isActive) return;
+
+        DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(DiscordConnect.getInstance().getBungeeListener());
+        ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
+        if(chatCasterListener != null)  DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(chatCasterListener);
+        DiscordConnect.getInstance().getLogger().info(Message.normalShutdown.toString());
+
+        if(isRestart) {
+            bot.shutdownNow();
+            isRestarting = true;
+        }else{
+            //プロキシ停止メッセージ
             if(chatChannelSenders != null) {
                 sendMessageToChatChannel(
                         Message.serverActivity.toString(),
@@ -75,10 +88,7 @@ public class BotManager implements EventListener {
                 );
             }
 
-            DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(DiscordConnect.getInstance().getBungeeListener());
-            ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
-            if(chatCasterListener != null)  DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(chatCasterListener);
-            DiscordConnect.getInstance().getLogger().info(Message.normalShutdown.toString());
+            //送信完了まで待機
             if(chatChannelSenders != null) {
                 chatChannelSenders.forEach(DiscordSender::threadStop);
                 chatChannelSenders.forEach(sender -> {
@@ -93,10 +103,12 @@ public class BotManager implements EventListener {
 
             //botのシャットダウン
             bot.shutdown();
-            bot = null;
-            chatChannelIds = null;
-            isActive = false;
         }
+
+        bot = null;
+        chatChannelSenders = null;
+        chatChannelIds = null;
+        isActive = false;
     }
 
     @Override
@@ -120,7 +132,7 @@ public class BotManager implements EventListener {
                 DiscordConnect.getInstance().getLogger().severe(Message.mainChannelNotFound.toString());
                 DiscordConnect.getInstance().getLogger().severe(Message.shutdownDueToError.toString());
                 chatChannelSenders = null;
-                bot.shutdown();
+                bot.shutdownNow();
                 return;
             }
             chatChannelSenders.forEach(Thread::start);
@@ -131,6 +143,15 @@ public class BotManager implements EventListener {
                     DiscordConnect.getInstance().getProxy().getPlayers().size(),
                     DiscordConnect.getInstance().getProxy().getConfig().getPlayerLimit()
             );
+
+            DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
+
+            if(isRestarting) {
+                //TODO 再起動完了メッセージ
+                isRestarting = false;
+                return;
+            }
+
             sendMessageToChatChannel(
                     Message.serverActivity.toString(),
                     null,
@@ -145,8 +166,6 @@ public class BotManager implements EventListener {
                     null,
                     null
             );
-
-            DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
         }
     }
 

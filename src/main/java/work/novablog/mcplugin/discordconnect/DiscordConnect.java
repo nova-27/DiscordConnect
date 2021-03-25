@@ -100,7 +100,7 @@ public final class DiscordConnect extends Plugin {
 
     public void loadConfig() {
         if(botManager != null) {
-            botManager.botShutdown();
+            botManager.botShutdown(true);
             botManager = null;
         }
 
@@ -165,6 +165,6 @@ public final class DiscordConnect extends Plugin {
 
     @Override
     public void onDisable() {
-        botManager.botShutdown();
+        botManager.botShutdown(false);
     }
 }
