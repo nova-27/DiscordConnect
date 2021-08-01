@@ -6,3 +6,6 @@ playingGameName: サーバー稼働中！（{players}/{max}人）
 prefix: "!"
 toMinecraftFormat: "§9[Discord§7({channel_name})§9] §f<{name}>"
 toDiscordFormat: "*({server})* **{sender}** : {message}"
+
+# この値は変更しないでください！ (Don't change the value!)
+configVersion: 3

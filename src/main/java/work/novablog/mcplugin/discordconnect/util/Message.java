@@ -12,6 +12,7 @@ public enum Message {
     normalShutdown,
     botIsReady,
     configReloaded,
+    configIsOld,
 
     bungeeCommandDenied,
     bungeeCommandNotFound,

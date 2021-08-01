@@ -14,6 +14,7 @@ import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
+import work.novablog.mcplugin.discordconnect.util.Message;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -25,6 +26,8 @@ import java.util.Objects;
 import java.util.Properties;
 
 public final class DiscordConnect extends Plugin {
+    private static final int CONFIG_LATEST = 3;
+
     private static DiscordConnect instance;
     private BotManager botManager;
     private Properties langData;
@@ -183,6 +186,43 @@ public final class DiscordConnect extends Plugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        int configVersion = pluginConfiguration.getInt("configVersion", 0);
+        //configが古ければ新しいconfigをコピー
+        if(configVersion < CONFIG_LATEST) {
+            try {
+                //古いconfigをリネーム
+                File old_config = new File(getDataFolder(), "config_old.yml");
+                Files.deleteIfExists(old_config.toPath());
+                pluginConfig.renameTo(old_config);
+
+                //新しいconfigをコピー
+                pluginConfig = new File(getDataFolder(), "config.yml");
+                InputStream src = getResourceAsStream("config.yml");
+                Files.copy(src, pluginConfig.toPath());
+                pluginConfiguration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(pluginConfig);
+
+                //古いlangファイルをリネーム
+                File old_lang = new File(getDataFolder(), "message_old.yml");
+                Files.deleteIfExists(old_lang.toPath());
+                languageFile.renameTo(old_lang);
+
+                //新しいlangファイルをコピー
+                languageFile = new File(getDataFolder(), "message.yml");
+                src = getResourceAsStream(Locale.getDefault().toString() + ".properties");
+                if(src == null) src = getResourceAsStream("ja_JP.properties");
+                Files.copy(src, languageFile.toPath());
+                InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(languageFile), StandardCharsets.UTF_8);
+                BufferedReader bufferedReader = new BufferedReader(Objects.requireNonNull(inputStreamReader));
+                langData = new Properties();
+                langData.load(bufferedReader);
+
+                DiscordConnect.getInstance().getLogger().info(Message.configIsOld.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         String token = pluginConfiguration.getString("token");
         List<Long> chatChannelIds = pluginConfiguration.getLongList("chatChannelIDs");
         String playingGameName = pluginConfiguration.getString("playingGameName");
