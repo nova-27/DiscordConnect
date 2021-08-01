@@ -28,6 +28,7 @@ dependencies {
     implementation(files('libs/MarkdownConverter-1.1-SNAPSHOT-min.jar'))
     compileOnly(files('libs/N8ChatCaster-1.1.4-SNAPSHOT.jar'))
     compileOnly(files('libs/SMFB_Core-7.0.jar'))
+    compileOnly(files('libs/LunaChat.jar'))
 }
 
 shadowJar {
