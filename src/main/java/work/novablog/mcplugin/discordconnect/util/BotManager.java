@@ -152,7 +152,7 @@ public class BotManager implements EventListener {
             DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
 
             if(isRestarting) {
-                //TODO 再起動完了メッセージ
+                DiscordConnect.getInstance().getLogger().info(Message.botRestarted.toString());
                 isRestarting = false;
                 return;
             }

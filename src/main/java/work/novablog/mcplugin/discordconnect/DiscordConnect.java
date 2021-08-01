@@ -229,8 +229,12 @@ public final class DiscordConnect extends Plugin {
         String prefix = pluginConfiguration.getString("prefix");
         String toMinecraftFormat = pluginConfiguration.getString("toMinecraftFormat");
         String toDiscordFormat = pluginConfiguration.getString("toDiscordFormat");
+        String japanizeFormat = pluginConfiguration.getString("japanizeFormat");
         bungeeListener = new BungeeListener(toDiscordFormat);
-        if(lunaChatListener != null) lunaChatListener.setToDiscordFormat(toDiscordFormat);
+        if(lunaChatListener != null) {
+            lunaChatListener.setToDiscordFormat(toDiscordFormat);
+            lunaChatListener.setJapanizeFormat(japanizeFormat);
+        }
         botManager = new BotManager(token, chatChannelIds, playingGameName, prefix, toMinecraftFormat);
     }
 

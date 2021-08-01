@@ -10,10 +10,12 @@ import work.novablog.mcplugin.discordconnect.DiscordConnect;
 
 public class LunaChatListener implements Listener {
     private String toDiscordFormat;
+    private String japanizeFormat;
 
     public void setToDiscordFormat(String toDiscordFormat) {
         this.toDiscordFormat = toDiscordFormat;
     }
+    public void setJapanizeFormat(String japanizeFormat) {this.japanizeFormat = japanizeFormat;}
 
     /**
      * LunaChatのチャンネルにJapanizeメッセージが送信されたら実行
@@ -23,8 +25,12 @@ public class LunaChatListener implements Listener {
     public void onJapanizeChat(LunaChatBungeePostJapanizeEvent event) {
         if(!event.getChannel().isGlobalChannel()) return;
 
-        //TODO フォーマットの自由指定
-        DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel("JP: " + event.getJapanized());
+        DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
+                japanizeFormat.replace("{server}", event.getMember().getServerName())
+                        .replace("{sender}", event.getMember().getDisplayName())
+                        .replace("{japanized}", event.getJapanized())
+                        .replace("{original}", event.getOriginal())
+        );
     }
 
     /**
