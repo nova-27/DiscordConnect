@@ -14,6 +14,7 @@ import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
+import work.novablog.mcplugin.discordconnect.util.GithubAPI;
 import work.novablog.mcplugin.discordconnect.util.Message;
 
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ import java.util.Properties;
 
 public final class DiscordConnect extends Plugin {
     private static final int CONFIG_LATEST = 3;
+    private static final String pluginDownloadLink = "https://github.com/nova-27/DiscordConnect/releases";
 
     private static DiscordConnect instance;
     private BotManager botManager;
@@ -236,6 +238,36 @@ public final class DiscordConnect extends Plugin {
             lunaChatListener.setJapanizeFormat(japanizeFormat);
         }
         botManager = new BotManager(token, chatChannelIds, playingGameName, prefix, toMinecraftFormat);
+
+        // アップデートチェック
+        boolean updateCheck = pluginConfiguration.getBoolean("updateCheck");
+        String currentVer = getDescription().getVersion();
+        String latestVer = GithubAPI.getLatestVersionNum();
+        if(updateCheck) {
+            if (latestVer == null) {
+                // チェックに失敗
+                getLogger().info(
+                        Message.updateCheckFailed.toString()
+                );
+            } else if (currentVer.equals(latestVer)) {
+                // すでに最新
+                getLogger().info(
+                        Message.pluginIsLatest.toString()
+                                .replace("{current}", currentVer)
+                );
+            }else{
+                // 新しいバージョンがある
+                getLogger().info(
+                        Message.updateNotice.toString()
+                                .replace("{current}", currentVer)
+                                .replace("{latest}", latestVer)
+                );
+                getLogger().info(
+                        Message.updateDownloadLink.toString()
+                                .replace("{link}",pluginDownloadLink)
+                );
+            }
+        }
     }
 
     @Override

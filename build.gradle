@@ -24,6 +24,9 @@ dependencies {
     implementation("net.dv8tion:JDA:4.3.0_300") {
         exclude module: 'opus-java'
     }
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.12.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.4'
     implementation('org.bstats:bstats-bungeecord:2.2.1')
     implementation(files('libs/MarkdownConverter-1.1-SNAPSHOT-min.jar'))
     compileOnly(files('libs/N8ChatCaster-1.1.4-SNAPSHOT.jar'))

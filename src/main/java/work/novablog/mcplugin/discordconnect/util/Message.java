@@ -15,6 +15,11 @@ public enum Message {
     configReloaded,
     configIsOld,
 
+    updateNotice,
+    updateDownloadLink,
+    updateCheckFailed,
+    pluginIsLatest,
+
     bungeeCommandDenied,
     bungeeCommandNotFound,
     bungeeCommandSyntaxError,
