@@ -11,7 +11,14 @@ public enum Message {
     shutdownDueToError,
     normalShutdown,
     botIsReady,
+    botRestarted,
     configReloaded,
+    configIsOld,
+
+    updateNotice,
+    updateDownloadLink,
+    updateCheckFailed,
+    pluginIsLatest,
 
     bungeeCommandDenied,
     bungeeCommandNotFound,

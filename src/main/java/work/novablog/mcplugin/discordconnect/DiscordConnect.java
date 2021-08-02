@@ -1,5 +1,7 @@
 package work.novablog.mcplugin.discordconnect;
 
+import com.github.ucchyocean.lc3.LunaChatAPI;
+import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -10,7 +12,10 @@ import org.bstats.bungeecord.Metrics;
 import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
+import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
+import work.novablog.mcplugin.discordconnect.util.GithubAPI;
+import work.novablog.mcplugin.discordconnect.util.Message;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -22,12 +27,19 @@ import java.util.Objects;
 import java.util.Properties;
 
 public final class DiscordConnect extends Plugin {
+    private static final int CONFIG_LATEST = 3;
+    private static final String pluginDownloadLink = "https://github.com/nova-27/DiscordConnect/releases";
+
     private static DiscordConnect instance;
     private BotManager botManager;
     private Properties langData;
     private BungeeListener bungeeListener;
+
     private N8ChatCasterAPI chatCasterAPI;
     private ChatCasterListener chatCasterListener;
+
+    private LunaChatAPI lunaChatAPI;
+    private LunaChatListener lunaChatListener;
 
     /**
      * インスタンスを返す
@@ -77,6 +89,22 @@ public final class DiscordConnect extends Plugin {
         return chatCasterListener;
     }
 
+    /**
+     * LunaChatAPIを返す
+     * @return lunaChatAPI
+     */
+    public LunaChatAPI getLunaChatAPI() {
+        return lunaChatAPI;
+    }
+
+    /**
+     * LunaChatListenerを返す
+     * @return lunaChatListener
+     */
+    public LunaChatListener getLunaChatListener() {
+        return lunaChatListener;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
@@ -89,6 +117,13 @@ public final class DiscordConnect extends Plugin {
         if (temp instanceof N8ChatCasterPlugin) {
             chatCasterAPI = (((N8ChatCasterPlugin) temp).getChatCasterApi());
             chatCasterListener = new ChatCasterListener();
+        }
+
+        //LunaChatと連携
+        temp = getProxy().getPluginManager().getPlugin("LunaChat");
+        if(temp instanceof LunaChatBungee) {
+            lunaChatAPI = ((LunaChatBungee) temp).getLunaChatAPI();
+            lunaChatListener = new LunaChatListener();
         }
 
         //configの読み込み
@@ -153,14 +188,86 @@ public final class DiscordConnect extends Plugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        int configVersion = pluginConfiguration.getInt("configVersion", 0);
+        //configが古ければ新しいconfigをコピー
+        if(configVersion < CONFIG_LATEST) {
+            try {
+                //古いconfigをリネーム
+                File old_config = new File(getDataFolder(), "config_old.yml");
+                Files.deleteIfExists(old_config.toPath());
+                pluginConfig.renameTo(old_config);
+
+                //新しいconfigをコピー
+                pluginConfig = new File(getDataFolder(), "config.yml");
+                InputStream src = getResourceAsStream("config.yml");
+                Files.copy(src, pluginConfig.toPath());
+                pluginConfiguration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(pluginConfig);
+
+                //古いlangファイルをリネーム
+                File old_lang = new File(getDataFolder(), "message_old.yml");
+                Files.deleteIfExists(old_lang.toPath());
+                languageFile.renameTo(old_lang);
+
+                //新しいlangファイルをコピー
+                languageFile = new File(getDataFolder(), "message.yml");
+                src = getResourceAsStream(Locale.getDefault().toString() + ".properties");
+                if(src == null) src = getResourceAsStream("ja_JP.properties");
+                Files.copy(src, languageFile.toPath());
+                InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(languageFile), StandardCharsets.UTF_8);
+                BufferedReader bufferedReader = new BufferedReader(Objects.requireNonNull(inputStreamReader));
+                langData = new Properties();
+                langData.load(bufferedReader);
+
+                DiscordConnect.getInstance().getLogger().info(Message.configIsOld.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         String token = pluginConfiguration.getString("token");
         List<Long> chatChannelIds = pluginConfiguration.getLongList("chatChannelIDs");
         String playingGameName = pluginConfiguration.getString("playingGameName");
         String prefix = pluginConfiguration.getString("prefix");
         String toMinecraftFormat = pluginConfiguration.getString("toMinecraftFormat");
         String toDiscordFormat = pluginConfiguration.getString("toDiscordFormat");
+        String japanizeFormat = pluginConfiguration.getString("japanizeFormat");
         bungeeListener = new BungeeListener(toDiscordFormat);
+        if(lunaChatListener != null) {
+            lunaChatListener.setToDiscordFormat(toDiscordFormat);
+            lunaChatListener.setJapanizeFormat(japanizeFormat);
+        }
         botManager = new BotManager(token, chatChannelIds, playingGameName, prefix, toMinecraftFormat);
+
+        // アップデートチェック
+        boolean updateCheck = pluginConfiguration.getBoolean("updateCheck");
+        String currentVer = getDescription().getVersion();
+        String latestVer = GithubAPI.getLatestVersionNum();
+        if(updateCheck) {
+            if (latestVer == null) {
+                // チェックに失敗
+                getLogger().info(
+                        Message.updateCheckFailed.toString()
+                );
+            } else if (currentVer.equals(latestVer)) {
+                // すでに最新
+                getLogger().info(
+                        Message.pluginIsLatest.toString()
+                                .replace("{current}", currentVer)
+                );
+            }else{
+                // 新しいバージョンがある
+                getLogger().info(
+                        Message.updateNotice.toString()
+                                .replace("{current}", currentVer)
+                                .replace("{latest}", latestVer)
+                );
+                getLogger().info(
+                        Message.updateDownloadLink.toString()
+                                .replace("{link}",pluginDownloadLink)
+                );
+            }
+        }
     }
 
     @Override

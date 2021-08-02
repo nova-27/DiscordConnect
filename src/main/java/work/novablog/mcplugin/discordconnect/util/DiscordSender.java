@@ -3,17 +3,14 @@ package work.novablog.mcplugin.discordconnect.util;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DiscordSender extends Thread{
-    private final int QUEUE_BUF = 50;
-
-    private TextChannel channel;
-    private int startWrite = 0;
-    private int startRead = 0;
-    private final Object[] queue = new Object[QUEUE_BUF];
-
+    private final TextChannel channel;
+    private final Queue<Object> queue = new ArrayDeque<>();
     private boolean isStopped = false;
 
     public DiscordSender(TextChannel channel) {
@@ -26,13 +23,7 @@ public class DiscordSender extends Thread{
      */
     public void addQueue(String text) {
         if(text.equals("")) return;
-
-        queue[startWrite] = text;
-
-        startWrite++;
-        if (startWrite >= QUEUE_BUF) {
-            startWrite = 0;
-        }
+        queue.add(text);
     }
 
     /**
@@ -40,12 +31,7 @@ public class DiscordSender extends Thread{
      * @param embed 送信する埋め込みメッセージ
      */
     public void addQueue(MessageEmbed embed) {
-        queue[startWrite] = embed;
-
-        startWrite++;
-        if (startWrite >= QUEUE_BUF) {
-            startWrite = 0;
-        }
+        queue.add(embed);
     }
 
     /**
@@ -57,37 +43,25 @@ public class DiscordSender extends Thread{
 
     @Override
     public void run() {
-        while (!isStopped || queue[startRead] != null) {
-            StringBuilder Messages = new StringBuilder();
+        while (!isStopped || !queue.isEmpty()) {
+            StringBuilder messages = new StringBuilder();
 
             //キューを読む（文字）
-            while (queue[startRead] != null && queue[startRead] instanceof String) {
-                Messages.append(queue[startRead]).append("\n");
-                queue[startRead] = null;
-
-                startRead++;
-                if (startRead >= QUEUE_BUF) {
-                    startRead = 0;
-                }
+            while (!queue.isEmpty() && queue.peek() instanceof String) {
+                messages.append(queue.poll()).append("\n");
             }
 
-            if(!Messages.toString().equals("")) {
+            if(!messages.toString().equals("")) {
                 //制限が2000文字なので1900文字で区切る
-                Matcher m = Pattern.compile("[\\s\\S]{1,1900}").matcher(Messages.toString());
+                Matcher m = Pattern.compile("[\\s\\S]{1,1900}").matcher(messages.toString());
                 while (m.find()) {
                     channel.sendMessage(m.group()).complete();
                 }
             }
 
             //キューを読む（埋め込み）
-            while (queue[startRead] != null && queue[startRead] instanceof MessageEmbed) {
-                channel.sendMessage((MessageEmbed) queue[startRead]).complete();
-                queue[startRead] = null;
-
-                startRead++;
-                if (startRead >= QUEUE_BUF) {
-                    startRead = 0;
-                }
+            while (!queue.isEmpty() && queue.peek() instanceof MessageEmbed) {
+                channel.sendMessage((MessageEmbed) queue.poll()).complete();
             }
 
             try {
