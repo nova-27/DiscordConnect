@@ -25,11 +25,17 @@ public class LunaChatListener implements Listener {
     public void onJapanizeChat(LunaChatBungeePostJapanizeEvent event) {
         if(!event.getChannel().isGlobalChannel()) return;
 
+        MarkComponent[] JPcomponents = MarkdownConverter.fromMinecraftMessage(event.getJapanized(), '&');
+        String JPconvertedMessage = MarkdownConverter.toDiscordMessage(JPcomponents);
+
+        MarkComponent[] ORcomponents = MarkdownConverter.fromMinecraftMessage(event.getOriginal(), '&');
+        String ORconvertedMessage = MarkdownConverter.toDiscordMessage(ORcomponents);
+
         DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
                 japanizeFormat.replace("{server}", event.getMember().getServerName())
                         .replace("{sender}", event.getMember().getDisplayName())
-                        .replace("{japanized}", event.getJapanized())
-                        .replace("{original}", event.getOriginal())
+                        .replace("{japanized}", JPconvertedMessage)
+                        .replace("{original}", ORconvertedMessage)
         );
     }
 
