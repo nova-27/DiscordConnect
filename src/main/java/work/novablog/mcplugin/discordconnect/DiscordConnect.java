@@ -13,9 +13,10 @@ import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
-import work.novablog.mcplugin.discordconnect.util.BotManager;
+import work.novablog.mcplugin.discordconnect.util.discord.BotManager;
 import work.novablog.mcplugin.discordconnect.util.GithubAPI;
 import work.novablog.mcplugin.discordconnect.util.Message;
+import work.novablog.mcplugin.discordconnect.util.discord.WebhookManager;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -32,6 +33,7 @@ public final class DiscordConnect extends Plugin {
 
     private static DiscordConnect instance;
     private BotManager botManager;
+    private WebhookManager webhookManager;
     private Properties langData;
     private BungeeListener bungeeListener;
 
@@ -55,6 +57,14 @@ public final class DiscordConnect extends Plugin {
      */
     public BotManager getBotManager() {
         return botManager;
+    }
+
+    /**
+     * Webhookマネージャーを返す
+     * @return Webhookマネージャー
+     */
+    public WebhookManager getWebhookManager() {
+        return webhookManager;
     }
 
     /**
@@ -137,6 +147,11 @@ public final class DiscordConnect extends Plugin {
         if(botManager != null) {
             botManager.botShutdown(true);
             botManager = null;
+        }
+
+        if(webhookManager != null) {
+            webhookManager.shutdown();
+            webhookManager = null;
         }
 
         //設定フォルダ
@@ -225,6 +240,7 @@ public final class DiscordConnect extends Plugin {
             }
         }
 
+        // botの準備
         String token = pluginConfiguration.getString("token");
         List<Long> chatChannelIds = pluginConfiguration.getLongList("chatChannelIDs");
         String playingGameName = pluginConfiguration.getString("playingGameName");
@@ -238,6 +254,10 @@ public final class DiscordConnect extends Plugin {
             lunaChatListener.setJapanizeFormat(japanizeFormat);
         }
         botManager = new BotManager(token, chatChannelIds, playingGameName, prefix, toMinecraftFormat);
+
+        // webhookの準備
+        String webhookUrl = pluginConfiguration.getString("webhookURL");
+        webhookManager = new WebhookManager(webhookUrl);
 
         // アップデートチェック
         boolean updateCheck = pluginConfiguration.getBoolean("updateCheck");

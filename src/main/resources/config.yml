@@ -1,4 +1,5 @@
 token: xxxx
+webhookURL: "https://discord.com/api/webhooks/xxxxx/xxxxx"
 chatChannelIDs:
 - 000000000000000000
 playingGameName: サーバー稼働中！（{players}/{max}人）

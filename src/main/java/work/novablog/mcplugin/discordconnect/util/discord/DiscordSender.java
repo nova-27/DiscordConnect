@@ -1,4 +1,4 @@
-package work.novablog.mcplugin.discordconnect.util;
+package work.novablog.mcplugin.discordconnect.util.discord;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;

@@ -1,6 +1,5 @@
-package work.novablog.mcplugin.discordconnect.util;
+package work.novablog.mcplugin.discordconnect.util.discord;
 
-import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -15,10 +14,10 @@ import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
+import work.novablog.mcplugin.discordconnect.util.Message;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

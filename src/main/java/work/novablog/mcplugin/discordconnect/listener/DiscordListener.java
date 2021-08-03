@@ -8,7 +8,6 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
-import work.novablog.mcplugin.discordconnect.util.DiscordSender;
 
 import java.util.regex.Pattern;
 

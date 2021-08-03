@@ -24,6 +24,7 @@ dependencies {
     implementation("net.dv8tion:JDA:4.3.0_300") {
         exclude module: 'opus-java'
     }
+    implementation "club.minnced:discord-webhooks:0.5.8"
     implementation 'com.fasterxml.jackson.core:jackson-core:2.12.4'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.4'

@@ -7,6 +7,7 @@ import work.novablog.mcplugin.discordconnect.DiscordConnect;
  */
 public enum Message {
     invalidToken,
+    invalidWebhookURL,
     mainChannelNotFound,
     shutdownDueToError,
     normalShutdown,
