@@ -257,7 +257,11 @@ public final class DiscordConnect extends Plugin {
 
         // webhookの準備
         String webhookUrl = pluginConfiguration.getString("webhookURL");
-        webhookManager = new WebhookManager(webhookUrl);
+        try {
+            webhookManager = new WebhookManager(webhookUrl);
+        } catch (IllegalArgumentException e) {
+            getLogger().severe(Message.invalidWebhookURL.toString());
+        }
 
         // アップデートチェック
         boolean updateCheck = pluginConfiguration.getBoolean("updateCheck");

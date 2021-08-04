@@ -2,9 +2,6 @@ package work.novablog.mcplugin.discordconnect.command;
 
 import net.md_5.bungee.api.CommandSender;
 
-/**
- * Minecraftコマンドの原型
- */
 public interface BungeeCommandBase {
     /**
      * 実行する処理

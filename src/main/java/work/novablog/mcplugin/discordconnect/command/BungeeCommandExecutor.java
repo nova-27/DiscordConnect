@@ -4,42 +4,39 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.TabExecutor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import work.novablog.mcplugin.discordconnect.util.Message;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-/**
- * Minecraftコマンドの呼び出し等を行うクラス
- */
 public class BungeeCommandExecutor extends Command implements TabExecutor {
-    private ArrayList<BungeeSubCommandBuilder> subCommands;
+    private ArrayList<BungeeSubCommand> subCommands;
     private String permission;
 
     /**
-     * コンストラクタ
+     * Bungeecordコマンドの解析や処理の呼び出しを行うインスタンスを生成します
      * @param name コマンド名
-     * @param permission 権限
-     * @param aliases エイリアス
+     * @param permission コマンドを実行するための権限 nullまたは空文字の場合すべての人に実行権限を与えます
+     * @param aliases コマンドに結び付けられるエイリアス
      */
-    public BungeeCommandExecutor(String name, String permission, String... aliases) {
+    public BungeeCommandExecutor(@NotNull String name, @Nullable String permission, @NotNull String... aliases) {
         super(name, permission, aliases);
         subCommands = new ArrayList<>();
         this.permission = permission;
     }
 
     /**
-     * サブコマンドを追加する
-     * @param builder サブコマンド
+     * サブコマンドを追加します
+     * @param subCommand サブコマンド
      */
-    public void addSubCommand(BungeeSubCommandBuilder builder) {
-        subCommands.add(builder);
+    public void addSubCommand(BungeeSubCommand subCommand) {
+        subCommands.add(subCommand);
     }
 
     /**
-     * コマンド実行時に呼び出される
+     * コマンド実行時に呼び出されます
      * @param commandSender コマンド送信者
      * @param args 引数
      */
@@ -52,27 +49,22 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         }
         //引数の確認
         if(args.length == 0) {
-            for(BungeeSubCommandBuilder subCommand : subCommands) {
-                if(subCommand.isDefault) subCommand.action.execute(commandSender, new String[1]);
-            }
+            //デフォルトコマンドの実行
+            subCommands.stream().filter(subCommand -> subCommand.isDefault).forEach(subCommand -> subCommand.action.execute(commandSender, new String[1]));
             return;
         }
 
         //サブコマンドを選択
-        BungeeSubCommandBuilder execCmd = null;
-        for(BungeeSubCommandBuilder subCommand : subCommands) {
-            if(subCommand.alias.equals(args[0])) {
-                execCmd = subCommand;
-                break;
-            }
-        }
-        if(execCmd == null) {
+        Optional<BungeeSubCommand> targetSubCommand = subCommands.stream()
+                .filter(subCommand -> subCommand.alias.equals(args[0])).findFirst();
+        if(!targetSubCommand.isPresent()) {
+            //エイリアスが一致するサブコマンドがない場合エラー
             commandSender.sendMessage(new TextComponent(Message.bungeeCommandNotFound.toString()));
             return;
         }
 
         //権限の確認
-        if (execCmd.subPermission != null && !commandSender.hasPermission(execCmd.subPermission)) {
+        if (targetSubCommand.get().subPermission != null && !commandSender.hasPermission(targetSubCommand.get().subPermission)) {
             commandSender.sendMessage(new TextComponent(Message.bungeeCommandDenied.toString()));
             return;
         }
@@ -81,16 +73,16 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         System.arraycopy(args, 1, commandArgs, 0, commandArgs.length);
 
         //引数の確認
-        if(commandArgs.length < execCmd.requireArgs) {
+        if(commandArgs.length < targetSubCommand.get().requireArgs) {
             commandSender.sendMessage(new TextComponent(Message.bungeeCommandSyntaxError.toString()));
             return;
         }
 
-        execCmd.action.execute(commandSender, commandArgs);
+        targetSubCommand.get().action.execute(commandSender, commandArgs);
     }
 
     /**
-     * タブ補完機能
+     * タブ補完時に呼び出されます
      * @param commandSender 送信者
      * @param args 引数
      * @return 補完リスト
@@ -102,21 +94,17 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
             return Collections.emptyList();
         }
 
-        Set<String> match = new HashSet();
+        ArrayList<String> match = new ArrayList<>();
         args[0] = args[0].toLowerCase();
         if(args.length == 1) {
-            for(BungeeSubCommandBuilder subCommand : subCommands) {
-                if(subCommand.alias.startsWith(args[0])) match.add(subCommand.alias);
-            }
+            subCommands.stream().filter(subCommand -> subCommand.alias.startsWith(args[0]))
+                    .forEach(subCommand -> match.add(subCommand.alias));
         }
 
         return match;
     }
 
-    /**
-     * サブコマンドの設定等を保持するクラス
-     */
-    public class BungeeSubCommandBuilder {
+    public class BungeeSubCommand {
         private final String alias;
         private final String subPermission;
         private final BungeeCommandBase action;
@@ -124,41 +112,45 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         private int requireArgs;
 
         /**
-         * コンストラクタ
-         * @param alias エイリアス
-         * @param subPermission 権限
+         * サブコマンドの設定等を保持するインスタンスを生成します
+         * @param alias サブコマンドのエイリアス
+         * @param subPermission コマンドを実行するための権限
+         *                      nullまたは空文字の場合
+         *                      {@link BungeeCommandExecutor#permission}権限を持っている
+         *                      すべての人に実行権限を与えます
+         *                      {@link BungeeCommandExecutor#permission}がnullまたは空文字の場合
+         *                      subPermission引数が何であれすべての人に実行権限を与えます
          * @param action 実行する処理
          */
-        public BungeeSubCommandBuilder(String alias, String subPermission, BungeeCommandBase action) {
+        public BungeeSubCommand(@NotNull String alias, @Nullable String subPermission, @NotNull BungeeCommandBase action) {
             this.alias = alias;
-            this.subPermission = permission + "." + subPermission;
-            this.action = action;
-            isDefault = false;
-            requireArgs = 0;
-        }
-        public BungeeSubCommandBuilder(String alias, BungeeCommandBase action) {
-            this.alias = alias;
-            this.subPermission = null;
+            this.subPermission = StringUtils.isEmpty(subPermission) || StringUtils.isEmpty(permission) ? null : permission + "." + subPermission;
             this.action = action;
             isDefault = false;
             requireArgs = 0;
         }
 
         /**
-         * デフォルトコマンドを設定する
-         * @param isDefault デフォルトか
+         * デフォルトのコマンドであるか設定します
+         * <p>
+         *     サブコマンドのエイリアスを指定せずにコマンドを実行した際に、デフォルトコマンドの処理が実行されます
+         * </p>
+         * @param isDefault trueでデフォルトにする
          */
-        public BungeeSubCommandBuilder setDefault(boolean isDefault) {
+        public BungeeSubCommand setDefault(boolean isDefault) {
             this.isDefault = isDefault;
             return this;
         }
 
         /**
-         * 必要な引数の数を設定する
+         * 必要な引数の数を設定します
+         * <p>
+         *     コマンド実行時、引数の数が足りていなかったらエラーメッセージが出ます
+         * </p>
          * @param cnt 引数の数
          */
-        public BungeeSubCommandBuilder requireArgs(int cnt) {
-            requireArgs = cnt;
+        public BungeeSubCommand requireArgs(int cnt) {
+            this.requireArgs = cnt;
             return this;
         }
     }

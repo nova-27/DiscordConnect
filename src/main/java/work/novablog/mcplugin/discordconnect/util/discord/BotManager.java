@@ -92,7 +92,7 @@ public class BotManager implements EventListener {
 
             //送信完了まで待機
             if(chatChannelSenders != null) {
-                chatChannelSenders.forEach(DiscordSender::threadStop);
+                chatChannelSenders.forEach(DiscordSender::interrupt);
                 chatChannelSenders.forEach(sender -> {
                     try {
                         sender.join();
