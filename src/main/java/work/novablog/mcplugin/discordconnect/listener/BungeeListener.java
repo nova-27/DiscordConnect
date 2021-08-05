@@ -11,8 +11,10 @@ import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
-import work.novablog.mcplugin.discordconnect.util.Message;
+import work.novablog.mcplugin.discordconnect.util.ConfigManager;
+import work.novablog.mcplugin.discordconnect.util.discord.BotManager;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -22,18 +24,23 @@ public class BungeeListener implements Listener {
     private static final String AVATAR_IMG_URL = "https://crafatar.com/avatars/{uuid}?size=512&default=MHF_Steve&overlay";
     private final String toDiscordFormat;
 
+    /**
+     * bungeecordのイベントを受け取るインスタンスを生成します
+     * @param toDiscordFormat プレーンメッセージをDiscordへ送信するときのフォーマット
+     */
     public BungeeListener(String toDiscordFormat) {
         this.toDiscordFormat = toDiscordFormat;
     }
 
     /**
-     * チャットが送信されたら実行
+     * チャットが送信されたら実行されます
      * @param event チャット情報
      */
     @EventHandler
     public void onChat(ChatEvent event) {
-        //コマンドなら
-        if(event.isCommand() || event.isCancelled() || !(event.getSender() instanceof ProxiedPlayer)) return;
+        if(!DiscordConnect.getInstance().canBotBeUsed() || event.isCommand() || event.isCancelled() || !(event.getSender() instanceof ProxiedPlayer)) return;
+        BotManager botManager = DiscordConnect.getInstance().getBotManager();
+        assert botManager != null;
 
         N8ChatCasterAPI chatCasterApi = DiscordConnect.getInstance().getChatCasterAPI();
         LunaChatAPI lunaChatAPI = DiscordConnect.getInstance().getLunaChatAPI();
@@ -45,7 +52,7 @@ public class BungeeListener implements Listener {
 
             MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(message, '&');
             String convertedMessage = MarkdownConverter.toDiscordMessage(components);
-            DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
+            botManager.sendMessageToChatChannel(
                     toDiscordFormat.replace("{server}", senderServer)
                             .replace("{sender}", sender.getName())
                             .replace("{message}", convertedMessage)
@@ -54,15 +61,19 @@ public class BungeeListener implements Listener {
     }
 
     /**
-     * ログインされたら
+     * プレイヤーがログインしたら実行されます
      * @param e ログイン情報
      */
     @EventHandler
     public void onLogin(LoginEvent e) {
-        DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
-                Message.userActivity.toString(),
+        if(!DiscordConnect.getInstance().canBotBeUsed()) return;
+        BotManager botManager = DiscordConnect.getInstance().getBotManager();
+        assert botManager != null;
+
+        botManager.sendMessageToChatChannel(
+                ConfigManager.Message.userActivity.toString(),
                 null,
-                Message.joined.toString().replace("{name}", e.getConnection().getName()),
+                ConfigManager.Message.joined.toString().replace("{name}", e.getConnection().getName()),
                 Color.GREEN,
                 new ArrayList<>(),
                 null,
@@ -74,19 +85,23 @@ public class BungeeListener implements Listener {
                 AVATAR_IMG_URL.replace("{uuid}", e.getConnection().getUniqueId().toString().replace("-", ""))
         );
 
-        updatePlayerCount();
+        updatePlayerCount(botManager);
     }
 
     /**
-     * 切断されたら
+     * プレイヤーが切断したら実行されます
      * @param e 切断情報
      */
     @EventHandler
     public void onLogout(PlayerDisconnectEvent e) {
-        DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
-                Message.userActivity.toString(),
+        if(!DiscordConnect.getInstance().canBotBeUsed()) return;
+        BotManager botManager = DiscordConnect.getInstance().getBotManager();
+        assert botManager != null;
+
+        botManager.sendMessageToChatChannel(
+                ConfigManager.Message.userActivity.toString(),
                 null,
-                Message.left.toString().replace("{name}", e.getPlayer().getName()),
+                ConfigManager.Message.left.toString().replace("{name}", e.getPlayer().getName()),
                 Color.RED,
                 new ArrayList<>(),
                 null,
@@ -98,19 +113,23 @@ public class BungeeListener implements Listener {
                 AVATAR_IMG_URL.replace("{uuid}", e.getPlayer().getUniqueId().toString().replace("-", ""))
         );
 
-        updatePlayerCount();
+        updatePlayerCount(botManager);
     }
 
     /**
-     * サーバー間を移動したら
+     * プレイヤーがサーバー間を移動したら実行されます
      * @param e プレイヤー情報
      */
     @EventHandler
     public void onSwitch(ServerSwitchEvent e) {
-        DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
-                Message.userActivity.toString(),
+        if(!DiscordConnect.getInstance().canBotBeUsed()) return;
+        BotManager botManager = DiscordConnect.getInstance().getBotManager();
+        assert botManager != null;
+
+        botManager.sendMessageToChatChannel(
+                ConfigManager.Message.userActivity.toString(),
                 null,
-                Message.serverSwitched.toString().replace("{name}", e.getPlayer().getName()).replace("{server}", e.getPlayer().getServer().getInfo().getName()),
+                ConfigManager.Message.serverSwitched.toString().replace("{name}", e.getPlayer().getName()).replace("{server}", e.getPlayer().getServer().getInfo().getName()),
                 Color.CYAN,
                 new ArrayList<>(),
                 null,
@@ -124,11 +143,12 @@ public class BungeeListener implements Listener {
     }
 
     /**
-     * プレイヤー数情報を更新
+     * プレイヤー数情報を更新します
+     * @param botManager アクティブなbotマネージャーのインスタンス
      */
-    private void updatePlayerCount() {
+    private void updatePlayerCount(@NotNull BotManager botManager) {
         DiscordConnect.getInstance().getProxy().getScheduler().schedule(DiscordConnect.getInstance(), () ->
-                DiscordConnect.getInstance().getBotManager().updateGameName(
+                botManager.updateGameName(
                         DiscordConnect.getInstance().getProxy().getPlayers().size(),
                         DiscordConnect.getInstance().getProxy().getConfig().getPlayerLimit()
         ),1L, TimeUnit.SECONDS);

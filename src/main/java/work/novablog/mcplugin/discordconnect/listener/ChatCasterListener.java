@@ -9,12 +9,14 @@ import work.novablog.mcplugin.discordconnect.DiscordConnect;
 
 public class ChatCasterListener implements Listener {
     /**
-     * グローバルチャットに送信されたら実行（連携プラグイン有効時のみ実行される）
+     * グローバルチャットに送信されたら実行されます
      * @param event チャット情報
      */
     @EventHandler
     public void onGlobalChat(GlobalChatEvent event) {
-        if (event.isCancelled()) return;
+        if(!DiscordConnect.getInstance().canBotBeUsed() || event.isCancelled()) return;
+        assert DiscordConnect.getInstance().getChatCasterAPI() != null;
+        assert DiscordConnect.getInstance().getBotManager() != null;
 
         String message = DiscordConnect.getInstance().getChatCasterAPI().formatMessageForDiscord(event);
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(message, '&');

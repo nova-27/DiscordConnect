@@ -2,19 +2,19 @@ package work.novablog.mcplugin.discordconnect.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class GithubAPI {
     /**
-     * プラグインの最新バージョン番号を取得する
-     * @return バージョン番号
+     * プラグインの最新バージョン番号を取得します
+     * @return バージョン番号 チェックに失敗した場合、空文字が返されます
      */
-    public static String getLatestVersionNum() {
+    public static @NotNull String getLatestVersionNum() {
         try {
             StringBuilder result = new StringBuilder();
 
@@ -35,7 +35,7 @@ public class GithubAPI {
             JsonNode root = mapper.readTree(result.toString());
             return root.get("tag_name").asText().replace("v", "");
         } catch(Exception e) {
-            return null;
+            return "";
         }
     }
 }

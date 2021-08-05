@@ -8,6 +8,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
+import work.novablog.mcplugin.discordconnect.util.discord.BotManager;
 
 import java.util.regex.Pattern;
 
@@ -15,6 +16,11 @@ public class DiscordListener extends ListenerAdapter {
     private final String prefix;
     private final String toMinecraftFormat;
 
+    /**
+     * Discordのイベントをリッスンするインスタンスを生成します
+     * @param prefix コマンドのprefix
+     * @param toMinecraftFormat DiscordのメッセージをBungeecordへ転送するときのフォーマット
+     */
     public DiscordListener(String prefix, String toMinecraftFormat) {
         this.prefix = prefix;
         this.toMinecraftFormat = toMinecraftFormat;
@@ -23,7 +29,9 @@ public class DiscordListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent message) {
         if(message.getAuthor().isBot()) return;
-        if(!DiscordConnect.getInstance().getBotManager().getChatChannelIds().contains(message.getChannel().getIdLong())) return;
+        BotManager botManager = DiscordConnect.getInstance().getBotManager();
+        assert botManager != null;
+        if(!botManager.getChatChannelIds().contains(message.getChannel().getIdLong())) return;
 
         if (message.getMessage().getContentRaw().startsWith(prefix)) {
             //コマンド TODO
@@ -47,16 +55,14 @@ public class DiscordListener extends ListenerAdapter {
                 ProxyServer.getInstance().broadcast(send);
             }
 
-            message.getMessage().getAttachments().forEach((attachment) -> {
-                ProxyServer.getInstance().broadcast(
-                        new TextComponent(
-                                toMinecraftFormat
-                                        .replace("{name}", message.getAuthor().getName())
-                                        .replace("{channel_name}", message.getChannel().getName()) +
-                                        attachment.getUrl()
-                        )
-                );
-            });
+            message.getMessage().getAttachments().forEach((attachment) -> ProxyServer.getInstance().broadcast(
+                    new TextComponent(
+                            toMinecraftFormat
+                                    .replace("{name}", message.getAuthor().getName())
+                                    .replace("{channel_name}", message.getChannel().getName()) +
+                                    attachment.getUrl()
+                    )
+            ));
         }
     }
 }

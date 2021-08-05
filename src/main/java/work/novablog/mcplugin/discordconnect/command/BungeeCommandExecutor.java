@@ -7,13 +7,13 @@ import net.md_5.bungee.api.plugin.TabExecutor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import work.novablog.mcplugin.discordconnect.util.Message;
+import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 
 import java.util.*;
 
 public class BungeeCommandExecutor extends Command implements TabExecutor {
-    private ArrayList<BungeeSubCommand> subCommands;
-    private String permission;
+    private final ArrayList<BungeeSubCommand> subCommands;
+    private final String permission;
 
     /**
      * Bungeecordコマンドの解析や処理の呼び出しを行うインスタンスを生成します
@@ -31,7 +31,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
      * サブコマンドを追加します
      * @param subCommand サブコマンド
      */
-    public void addSubCommand(BungeeSubCommand subCommand) {
+    public void addSubCommand(@NotNull BungeeSubCommand subCommand) {
         subCommands.add(subCommand);
     }
 
@@ -44,7 +44,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
     public void execute(CommandSender commandSender, String[] args) {
         //権限の確認
         if(!commandSender.hasPermission(permission)) {
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommandDenied.toString()));
+            commandSender.sendMessage(new TextComponent(ConfigManager.Message.bungeeCommandDenied.toString()));
             return;
         }
         //引数の確認
@@ -59,13 +59,13 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
                 .filter(subCommand -> subCommand.alias.equals(args[0])).findFirst();
         if(!targetSubCommand.isPresent()) {
             //エイリアスが一致するサブコマンドがない場合エラー
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommandNotFound.toString()));
+            commandSender.sendMessage(new TextComponent(ConfigManager.Message.bungeeCommandNotFound.toString()));
             return;
         }
 
         //権限の確認
         if (targetSubCommand.get().subPermission != null && !commandSender.hasPermission(targetSubCommand.get().subPermission)) {
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommandDenied.toString()));
+            commandSender.sendMessage(new TextComponent(ConfigManager.Message.bungeeCommandDenied.toString()));
             return;
         }
 
@@ -74,7 +74,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
 
         //引数の確認
         if(commandArgs.length < targetSubCommand.get().requireArgs) {
-            commandSender.sendMessage(new TextComponent(Message.bungeeCommandSyntaxError.toString()));
+            commandSender.sendMessage(new TextComponent(ConfigManager.Message.bungeeCommandSyntaxError.toString()));
             return;
         }
 
@@ -97,7 +97,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         ArrayList<String> match = new ArrayList<>();
         args[0] = args[0].toLowerCase();
         if(args.length == 1) {
-            subCommands.stream().filter(subCommand -> subCommand.alias.startsWith(args[0]))
+            subCommands.stream().filter(subCommand -> subCommand.alias.startsWith(args[0]) && commandSender.hasPermission(subCommand.subPermission))
                     .forEach(subCommand -> match.add(subCommand.alias));
         }
 

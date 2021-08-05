@@ -8,10 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class WebhookManager {
-    private WebhookClient client;
+    private final WebhookClient client;
 
     /**
-     * DiscordのWebhookにメッセージを送信するためのクラスを生成します
+     * DiscordのWebhookにメッセージを送信するためのインスタンスを生成します
      * @param url WebhookのURL
      * @throws IllegalArgumentException URLの形式が不正な場合
      */

@@ -11,10 +11,8 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
-import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
-import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
-import work.novablog.mcplugin.discordconnect.util.Message;
+import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
@@ -26,91 +24,79 @@ import java.util.stream.Collectors;
  * DiscordBotの管理を行う
  */
 public class BotManager implements EventListener {
-    private JDA bot;
-    private List<Long> chatChannelIds;
+    private final JDA bot;
+    private final List<Long> chatChannelIds;
     private List<DiscordSender> chatChannelSenders;
-    private String playingGameName;
+    private final String playingGameName;
 
     private boolean isActive;
-    private static boolean isRestarting;
+    private static boolean isRestarting = false;
 
-    public BotManager(String token, List<Long> chatChannelIds, String playingGameName, String prefix, String toMinecraftFormat) {
+    /**
+     * discordのbotでメッセージを送信するためのbot管理インスタンスを生成します
+     * @param token botのトークン
+     * @param chatChannelIds BungeeCordのチャットと連携されるDiscordチャンネルのID
+     * @param playingGameName botのステータスに表示されるプレイ中のゲーム名
+     * @param prefix コマンドのprefix
+     * @param toMinecraftFormat DiscordのメッセージをBungeeCordに転送するときのフォーマット
+     * @throws LoginException botのログインに失敗した場合にthrowされます
+     */
+    public BotManager(@NotNull String token, @NotNull List<Long> chatChannelIds, @NotNull String playingGameName, @NotNull String prefix, @NotNull String toMinecraftFormat) throws LoginException {
         //ログインする
-        try {
-            bot = JDABuilder.createDefault(token)
-                    .addEventListeners(this)
-                    .setAutoReconnect(true)
-                    .build();
-            bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
-        } catch (LoginException e) {
-            DiscordConnect.getInstance().getLogger().severe(Message.invalidToken.toString());
-            bot = null;
-            isActive = false;
-            return;
-        }
+        bot = JDABuilder.createDefault(token)
+                .addEventListeners(this)
+                .setAutoReconnect(true)
+                .build();
+        bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
 
         this.chatChannelIds = chatChannelIds;
         this.playingGameName = playingGameName;
-        isActive = true;
+        this.isActive = false;
     }
 
     /**
-     * botをシャットダウンする
-     * @param isRestart botの再起動(reload)か
+     * botをシャットダウンします
+     * @param isRestart botの再起動(reload)かどうか
+     *                  trueの場合、プロキシの開始・停止メッセージが表示されません
      */
     public void botShutdown(boolean isRestart) {
         if(!isActive) return;
 
-        DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(DiscordConnect.getInstance().getBungeeListener());
-        ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
-        LunaChatListener lunaChatListener = DiscordConnect.getInstance().getLunaChatListener();
-        if(chatCasterListener != null)  DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(chatCasterListener);
-        if(lunaChatListener != null)  DiscordConnect.getInstance().getProxy().getPluginManager().unregisterListener(lunaChatListener);
-        DiscordConnect.getInstance().getLogger().info(Message.normalShutdown.toString());
+        isActive = false;
+        isRestarting = isRestart;
+        DiscordConnect.getInstance().getLogger().info(ConfigManager.Message.normalShutdown.toString());
 
-        if(isRestart) {
-            bot.shutdownNow();
-            isRestarting = true;
-        }else{
-            //プロキシ停止メッセージ
-            if(chatChannelSenders != null) {
-                sendMessageToChatChannel(
-                        Message.serverActivity.toString(),
-                        null,
-                        Message.proxyStopped.toString(),
-                        new Color(102, 205, 170),
-                        new ArrayList<>(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null
+        if(!isRestart && chatChannelSenders != null) {
+            //プロキシ終了メッセージ
+            sendMessageToChatChannel(
+                    ConfigManager.Message.serverActivity.toString(),
+                    null,
+                    ConfigManager.Message.proxyStopped.toString(),
+                    new Color(102, 205, 170),
+                    new ArrayList<>(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
                 );
-            }
-
-            //送信完了まで待機
-            if(chatChannelSenders != null) {
-                chatChannelSenders.forEach(DiscordSender::interrupt);
-                chatChannelSenders.forEach(sender -> {
-                    try {
-                        sender.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                });
-                chatChannelSenders = null;
-            }
-
-            //botのシャットダウン
-            bot.shutdown();
         }
 
-        bot = null;
-        chatChannelSenders = null;
-        chatChannelIds = null;
-        isActive = false;
+        //送信完了まで待機
+        if(chatChannelSenders != null) {
+            chatChannelSenders.forEach(DiscordSender::interrupt);
+            chatChannelSenders.forEach(sender -> {
+                try {
+                    sender.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        bot.shutdownNow();
     }
 
     @Override
@@ -122,44 +108,36 @@ public class BotManager implements EventListener {
             chatChannelSenders = chatChannelIds.stream()
                     .map(id -> {
                         TextChannel chatChannel = bot.getTextChannelById(id);
-                        if(chatChannel == null) {
-                            return null;
-                        }else{
-                            return new DiscordSender(chatChannel);
-                        }
+                        return chatChannel == null ? null : new DiscordSender(chatChannel);
                     })
                     .collect(Collectors.toList());
             if(chatChannelSenders.contains(null)) {
-                //無効なチャンネルがあれば
-                DiscordConnect.getInstance().getLogger().severe(Message.mainChannelNotFound.toString());
-                DiscordConnect.getInstance().getLogger().severe(Message.shutdownDueToError.toString());
-                chatChannelSenders = null;
+                //無効なチャンネルがあればシャットダウン
+                DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.mainChannelNotFound.toString());
+                DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.shutdownDueToError.toString());
                 bot.shutdownNow();
                 return;
             }
+
             chatChannelSenders.forEach(Thread::start);
-            DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), DiscordConnect.getInstance().getBungeeListener());
-            ChatCasterListener chatCasterListener = DiscordConnect.getInstance().getChatCasterListener();
-            LunaChatListener lunaChatListener = DiscordConnect.getInstance().getLunaChatListener();
-            if(chatCasterListener != null) DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), chatCasterListener);
-            if(lunaChatListener != null) DiscordConnect.getInstance().getProxy().getPluginManager().registerListener(DiscordConnect.getInstance(), lunaChatListener);
-            DiscordConnect.getInstance().getBotManager().updateGameName(
+            updateGameName(
                     DiscordConnect.getInstance().getProxy().getPlayers().size(),
                     DiscordConnect.getInstance().getProxy().getConfig().getPlayerLimit()
             );
+            DiscordConnect.getInstance().getLogger().info(ConfigManager.Message.botIsReady.toString());
 
-            DiscordConnect.getInstance().getLogger().info(Message.botIsReady.toString());
+            isActive = true;
 
             if(isRestarting) {
-                DiscordConnect.getInstance().getLogger().info(Message.botRestarted.toString());
                 isRestarting = false;
+                DiscordConnect.getInstance().getLogger().info(ConfigManager.Message.botRestarted.toString());
                 return;
             }
 
             sendMessageToChatChannel(
-                    Message.serverActivity.toString(),
+                    ConfigManager.Message.serverActivity.toString(),
                     null,
-                    Message.proxyStarted.toString(),
+                    ConfigManager.Message.proxyStarted.toString(),
                     new Color(102, 205, 170),
                     new ArrayList<>(),
                     null,
@@ -169,15 +147,25 @@ public class BotManager implements EventListener {
                     null,
                     null,
                     null
-            );
-        }
+            );}
     }
 
     /**
-     * チャットチャンネルへメッセージを送信
-     * @param mes メッセージ
+     * botがアクティブかどうか返します
+     * <p>
+     *     非アクティブの時botはログインしていないため、メッセージ送信など各種機能を利用できません
+     * </p>
+     * @return trueの場合アクティブ
      */
-    public void sendMessageToChatChannel(String mes) {
+    public boolean isActive() {
+        return isActive;
+    }
+
+    /**
+     * チャットチャンネルへメッセージを送信します
+     * @param mes 送信するメッセージ
+     */
+    public void sendMessageToChatChannel(@NotNull String mes) {
         chatChannelSenders.forEach(sender -> sender.addQueue(mes));
     }
 
@@ -195,6 +183,7 @@ public class BotManager implements EventListener {
      * @param footerIcon フッターのアイコン
      * @param image 画像
      * @param thumbnail サムネイル
+     * @deprecated
      */
     public void sendMessageToChatChannel(String title, String titleUrl, String desc, Color color, @NotNull List<MessageEmbed.Field> embedFields, String author, String authorUrl, String authorIcon, String footer, String footerIcon, String image, String thumbnail) {
         EmbedBuilder eb = new EmbedBuilder();
@@ -212,7 +201,7 @@ public class BotManager implements EventListener {
     }
 
     /**
-     * チャットチャンネルのIDリストを取得
+     * チャットチャンネルのIDリストを取得します
      * @return IDリスト
      */
     public List<Long> getChatChannelIds() {
@@ -220,7 +209,7 @@ public class BotManager implements EventListener {
     }
 
     /**
-     * プレイ中のゲーム名を更新
+     * botのプレイ中のゲーム名を更新します
      * @param playerCount プレイヤー数
      * @param maxPlayers 最大プレイヤー数
      */
@@ -230,6 +219,8 @@ public class BotManager implements EventListener {
         bot.getPresence().setActivity(
                 Activity.playing(playingGameName
                         .replace("{players}", String.valueOf(playerCount))
-                        .replace("{max}", maxPlayersString)));
+                        .replace("{max}", maxPlayersString)
+                )
+        );
     }
 }
