@@ -16,7 +16,7 @@ import java.util.Properties;
 public class ConfigManager {
     private static final int CONFIG_LATEST = 3;
 
-    private static Properties langData;
+    private static Configuration langData;
 
     public String botToken;
     public List<Long> botChatChannelIds;
@@ -72,19 +72,16 @@ public class ConfigManager {
         return ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
     }
 
-    private Properties getLangData(Plugin plugin) throws IOException {
+    private Configuration getLangData(Plugin plugin) throws IOException {
         File langFile = new File(plugin.getDataFolder(), "message.yml");
         if (!langFile.exists()) {
             //存在しなければコピー
-            InputStream src = plugin.getResourceAsStream(Locale.getDefault().toString() + ".properties");
-            if(src == null) src = plugin.getResourceAsStream("ja_JP.properties");
+            InputStream src = plugin.getResourceAsStream(Locale.getDefault().toString() + ".yml");
+            if(src == null) src = plugin.getResourceAsStream("ja_JP.yml");
             Files.copy(src, langFile.toPath());
         }
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(langFile), StandardCharsets.UTF_8));
-        Properties langData = new Properties();
-        langData.load(br);
-        return langData;
+        return ConfigurationProvider.getProvider(YamlConfiguration.class).load(langFile);
     }
 
     private void backupOldFile(Plugin plugin, String targetFileName) throws IOException {
@@ -134,7 +131,7 @@ public class ConfigManager {
          */
         @Override
         public String toString() {
-            return langData.getProperty(name());
+            return langData.getString(name());
         }
     }
 }
