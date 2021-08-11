@@ -7,7 +7,7 @@ import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class WebhookManager {
+public class DiscordWebhookSender {
     private final WebhookClient client;
 
     /**
@@ -15,7 +15,7 @@ public class WebhookManager {
      * @param url WebhookのURL
      * @throws IllegalArgumentException URLの形式が不正な場合
      */
-    public WebhookManager(@NotNull String url) throws IllegalArgumentException {
+    public DiscordWebhookSender(@NotNull String url) throws IllegalArgumentException {
         WebhookClientBuilder builder = new WebhookClientBuilder(url);
 
         builder.setThreadFactory((job) -> {

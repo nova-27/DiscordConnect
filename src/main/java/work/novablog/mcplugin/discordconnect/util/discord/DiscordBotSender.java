@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DiscordSender extends Thread{
+public class DiscordBotSender extends Thread{
     private final TextChannel channel;
     private final LinkedBlockingDeque<Object> queue;
     private boolean isInterrupted;
@@ -21,7 +21,7 @@ public class DiscordSender extends Thread{
      * </p>
      * @param channel メッセージを送信するチャンネル
      */
-    public DiscordSender(@NotNull TextChannel channel) {
+    public DiscordBotSender(@NotNull TextChannel channel) {
         this.channel = channel;
         queue = new LinkedBlockingDeque<>();
         isInterrupted = false;

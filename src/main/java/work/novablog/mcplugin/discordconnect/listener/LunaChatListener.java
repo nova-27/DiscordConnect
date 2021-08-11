@@ -10,8 +10,9 @@ import net.md_5.bungee.event.EventHandler;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.util.ConvertUtil;
-import work.novablog.mcplugin.discordconnect.util.discord.WebhookManager;
+import work.novablog.mcplugin.discordconnect.util.discord.DiscordWebhookSender;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class LunaChatListener implements Listener {
@@ -37,8 +38,8 @@ public class LunaChatListener implements Listener {
      */
     @EventHandler
     public void onJapanizeChat(LunaChatBungeePostJapanizeEvent event) {
-        WebhookManager webhookManager = DiscordConnect.getInstance().getWebhookManager();
-        if(webhookManager == null || !event.getChannel().isGlobalChannel()) return;
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
+        if(!event.getChannel().isGlobalChannel()) return;
 
         MarkComponent[] JPcomponents = MarkdownConverter.fromMinecraftMessage(event.getJapanized(), '&');
         String JPconvertedMessage = MarkdownConverter.toDiscordMessage(JPcomponents);
@@ -47,15 +48,17 @@ public class LunaChatListener implements Listener {
         String ORconvertedMessage = MarkdownConverter.toDiscordMessage(ORcomponents);
 
         UUID playerUuid = UUID.fromString(uuidCacheData.getUUIDFromName(event.getMember().getName()));
+        String avatarUrl = ConvertUtil.getMinecraftAvatarURL(playerUuid);
+        String message = japanizeFormat.replace("{server}", event.getMember().getServerName())
+                .replace("{sender}", event.getMember().getDisplayName())
+                .replace("{japanized}", JPconvertedMessage)
+                .replace("{original}", ORconvertedMessage);
 
-        webhookManager.sendMessage(
+        discordWebhookSenders.forEach(sender -> sender.sendMessage(
                 event.getMember().getDisplayName(),
-                ConvertUtil.getMinecraftAvatarURL(playerUuid),
-                japanizeFormat.replace("{server}", event.getMember().getServerName())
-                        .replace("{sender}", event.getMember().getDisplayName())
-                        .replace("{japanized}", JPconvertedMessage)
-                        .replace("{original}", ORconvertedMessage)
-        );
+                avatarUrl,
+                message
+        ));
     }
 
     /**
@@ -64,20 +67,22 @@ public class LunaChatListener implements Listener {
      */
     @EventHandler
     public void onChat(LunaChatBungeeChannelChatEvent event) {
-        WebhookManager webhookManager = DiscordConnect.getInstance().getWebhookManager();
-        if(webhookManager == null || !event.getChannel().isGlobalChannel()) return;
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
+        if(!event.getChannel().isGlobalChannel()) return;
 
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getNgMaskedMessage(), '&');
         String convertedMessage = MarkdownConverter.toDiscordMessage(components);
 
         UUID playerUuid = UUID.fromString(uuidCacheData.getUUIDFromName(event.getMember().getName()));
+        String avatarUrl = ConvertUtil.getMinecraftAvatarURL(playerUuid);
+        String message = toDiscordFormat.replace("{server}", event.getMember().getServerName())
+                .replace("{sender}", event.getMember().getDisplayName())
+                .replace("{message}", convertedMessage);
 
-        webhookManager.sendMessage(
+        discordWebhookSenders.forEach(sender -> sender.sendMessage(
                 event.getMember().getDisplayName(),
-                ConvertUtil.getMinecraftAvatarURL(playerUuid),
-                toDiscordFormat.replace("{server}", event.getMember().getServerName())
-                        .replace("{sender}", event.getMember().getDisplayName())
-                        .replace("{message}", convertedMessage)
-        );
+                avatarUrl,
+                message
+        ));
     }
 }

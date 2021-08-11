@@ -7,11 +7,9 @@ import net.md_5.bungee.config.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 
 public class ConfigManager {
     private static final int CONFIG_LATEST = 3;
@@ -25,7 +23,7 @@ public class ConfigManager {
     public String sendToMinecraftFormat;
     public String sendToDiscordFormat;
     public String lunaChatJapanizeFormat;
-    public String botWebhookURL;
+    public List<String> botWebhookURLs;
     public boolean doUpdateCheck;
 
     /**
@@ -57,7 +55,7 @@ public class ConfigManager {
         sendToMinecraftFormat = pluginConfig.getString("toMinecraftFormat");
         sendToDiscordFormat = pluginConfig.getString("toDiscordFormat");
         lunaChatJapanizeFormat = pluginConfig.getString("japanizeFormat");
-        botWebhookURL = pluginConfig.getString("webhookURL");
+        botWebhookURLs = pluginConfig.getStringList("webhookURLs");
         doUpdateCheck = pluginConfig.getBoolean("updateCheck");
     }
 

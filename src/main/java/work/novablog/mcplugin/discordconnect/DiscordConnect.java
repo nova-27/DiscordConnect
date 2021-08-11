@@ -7,6 +7,7 @@ import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.bstats.bungeecord.Metrics;
+import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
@@ -14,18 +15,19 @@ import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
 import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 import work.novablog.mcplugin.discordconnect.util.discord.BotManager;
 import work.novablog.mcplugin.discordconnect.util.GithubAPI;
-import work.novablog.mcplugin.discordconnect.util.discord.WebhookManager;
+import work.novablog.mcplugin.discordconnect.util.discord.DiscordWebhookSender;
 
 import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.io.*;
+import java.util.ArrayList;
 
 public final class DiscordConnect extends Plugin {
     private static final String pluginDownloadLink = "https://github.com/nova-27/DiscordConnect/releases";
 
     private static DiscordConnect instance;
     private BotManager botManager;
-    private WebhookManager webhookManager;
+    private ArrayList<DiscordWebhookSender> discordWebhookSenders;
     private BungeeListener bungeeListener;
 
     private N8ChatCasterAPI chatCasterAPI;
@@ -52,11 +54,12 @@ public final class DiscordConnect extends Plugin {
     }
 
     /**
-     * Webhookマネージャーを返します
-     * @return webhookマネージャー
+     * Webhook送信インスタンスの配列を返します
+     * @return webhook送信インスタンス
      */
-    public @Nullable WebhookManager getWebhookManager() {
-        return webhookManager;
+    public @NotNull
+    ArrayList<DiscordWebhookSender> getDiscordWebhookSenders() {
+        return discordWebhookSenders;
     }
 
     /**
@@ -118,7 +121,7 @@ public final class DiscordConnect extends Plugin {
      */
     public void init() {
         if(botManager != null) botManager.botShutdown(true);
-        if(webhookManager != null) webhookManager.shutdown();
+        if(discordWebhookSenders != null) discordWebhookSenders.forEach(DiscordWebhookSender::shutdown);
         if(bungeeListener != null) getProxy().getPluginManager().unregisterListener(bungeeListener);
         if(lunaChatListener != null) getProxy().getPluginManager().unregisterListener(lunaChatListener);
         if(chatCasterListener != null) getProxy().getPluginManager().unregisterListener(chatCasterListener);
@@ -143,9 +146,10 @@ public final class DiscordConnect extends Plugin {
             getLogger().severe(ConfigManager.Message.invalidToken.toString());
         }
 
+        discordWebhookSenders = new ArrayList<>();
         try {
-            webhookManager = new WebhookManager(
-                    configManager.botWebhookURL
+            configManager.botWebhookURLs.forEach(url ->
+                    discordWebhookSenders.add(new DiscordWebhookSender(url))
             );
         } catch(IllegalArgumentException e) {
             getLogger().severe(ConfigManager.Message.invalidWebhookURL.toString());
@@ -194,6 +198,6 @@ public final class DiscordConnect extends Plugin {
     @Override
     public void onDisable() {
         if(botManager != null) botManager.botShutdown(false);
-        if(webhookManager != null) webhookManager.shutdown();
+        if(discordWebhookSenders != null) discordWebhookSenders.forEach(DiscordWebhookSender::shutdown);
     }
 }

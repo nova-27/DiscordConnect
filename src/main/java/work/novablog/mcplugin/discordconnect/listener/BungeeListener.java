@@ -15,9 +15,10 @@ import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 import work.novablog.mcplugin.discordconnect.util.ConvertUtil;
 import work.novablog.mcplugin.discordconnect.util.discord.BotManager;
-import work.novablog.mcplugin.discordconnect.util.discord.WebhookManager;
+import work.novablog.mcplugin.discordconnect.util.discord.DiscordWebhookSender;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class BungeeListener implements Listener {
@@ -37,8 +38,8 @@ public class BungeeListener implements Listener {
      */
     @EventHandler
     public void onChat(ChatEvent event) {
-        WebhookManager webhookManager = DiscordConnect.getInstance().getWebhookManager();
-        if(webhookManager == null || event.isCommand() || event.isCancelled() || !(event.getSender() instanceof ProxiedPlayer)) return;
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
+        if(event.isCommand() || event.isCancelled() || !(event.getSender() instanceof ProxiedPlayer)) return;
 
         N8ChatCasterAPI chatCasterApi = DiscordConnect.getInstance().getChatCasterAPI();
         LunaChatAPI lunaChatAPI = DiscordConnect.getInstance().getLunaChatAPI();
@@ -49,11 +50,12 @@ public class BungeeListener implements Listener {
 
             MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getMessage(), '&');
             String convertedMessage = MarkdownConverter.toDiscordMessage(components);
-            webhookManager.sendMessage(
+
+            discordWebhookSenders.forEach(sender -> sender.sendMessage(
                     name,
                     avatarURL,
                     convertedMessage
-            );
+            ));
         }
     }
 
@@ -63,28 +65,31 @@ public class BungeeListener implements Listener {
      */
     @EventHandler
     public void onLogin(LoginEvent e) {
-        WebhookManager webhookManager = DiscordConnect.getInstance().getWebhookManager();
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
-        if(webhookManager != null) {
-            String name = e.getConnection().getName();
-            String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getConnection().getUniqueId());
+        String name = e.getConnection().getName();
+        String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getConnection().getUniqueId());
 
-            WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
-            webhookEmbedBuilder.setAuthor(
-                    new WebhookEmbed.EmbedAuthor(name, avatarURL, null)
-            );
-            webhookEmbedBuilder.setColor(Color.GREEN.getRGB());
-            webhookEmbedBuilder.setTitle(
-                    new WebhookEmbed.EmbedTitle(
-                            ConfigManager.Message.userActivity.toString(),
-                            null
-                    )
-            );
-            webhookEmbedBuilder.setDescription(
-                    ConfigManager.Message.joined.toString().replace("{name}", name)
-            );
-            webhookManager.sendMessage(name, avatarURL, webhookEmbedBuilder.build());
-        }
+        WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
+        webhookEmbedBuilder.setAuthor(
+                new WebhookEmbed.EmbedAuthor(name, avatarURL, null)
+        );
+        webhookEmbedBuilder.setColor(Color.GREEN.getRGB());
+        webhookEmbedBuilder.setTitle(
+                new WebhookEmbed.EmbedTitle(
+                        ConfigManager.Message.userActivity.toString(),
+                        null
+                )
+        );
+        webhookEmbedBuilder.setDescription(
+                ConfigManager.Message.joined.toString().replace("{name}", name)
+        );
+
+        discordWebhookSenders.forEach(sender -> sender.sendMessage(
+                name,
+                avatarURL,
+                webhookEmbedBuilder.build()
+        ));
 
         if(DiscordConnect.getInstance().canBotBeUsed()) {
             assert DiscordConnect.getInstance().getBotManager() != null;
@@ -98,28 +103,31 @@ public class BungeeListener implements Listener {
      */
     @EventHandler
     public void onLogout(PlayerDisconnectEvent e) {
-        WebhookManager webhookManager = DiscordConnect.getInstance().getWebhookManager();
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
-        if(webhookManager != null) {
-            String name = e.getPlayer().getName();
-            String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
+        String name = e.getPlayer().getName();
+        String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
 
-            WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
-            webhookEmbedBuilder.setAuthor(
-                    new WebhookEmbed.EmbedAuthor(name, avatarURL, null)
-            );
-            webhookEmbedBuilder.setColor(Color.RED.getRGB());
-            webhookEmbedBuilder.setTitle(
-                    new WebhookEmbed.EmbedTitle(
-                            ConfigManager.Message.userActivity.toString(),
-                            null
-                    )
-            );
-            webhookEmbedBuilder.setDescription(
-                    ConfigManager.Message.left.toString().replace("{name}", name)
-            );
-            webhookManager.sendMessage(name, avatarURL, webhookEmbedBuilder.build());
-        }
+        WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
+        webhookEmbedBuilder.setAuthor(
+                new WebhookEmbed.EmbedAuthor(name, avatarURL, null)
+        );
+        webhookEmbedBuilder.setColor(Color.RED.getRGB());
+        webhookEmbedBuilder.setTitle(
+                new WebhookEmbed.EmbedTitle(
+                        ConfigManager.Message.userActivity.toString(),
+                        null
+                )
+        );
+        webhookEmbedBuilder.setDescription(
+                ConfigManager.Message.left.toString().replace("{name}", name)
+        );
+
+        discordWebhookSenders.forEach(sender -> sender.sendMessage(
+                name,
+                avatarURL,
+                webhookEmbedBuilder.build()
+        ));
 
         if(DiscordConnect.getInstance().canBotBeUsed()) {
             assert DiscordConnect.getInstance().getBotManager() != null;
@@ -133,30 +141,33 @@ public class BungeeListener implements Listener {
      */
     @EventHandler
     public void onSwitch(ServerSwitchEvent e) {
-        WebhookManager webhookManager = DiscordConnect.getInstance().getWebhookManager();
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
-        if(webhookManager != null) {
-            ProxiedPlayer player = e.getPlayer();
-            String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
+        ProxiedPlayer player = e.getPlayer();
+        String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
 
-            WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
-            webhookEmbedBuilder.setAuthor(
-                    new WebhookEmbed.EmbedAuthor(player.getName(), avatarURL, null)
-            );
-            webhookEmbedBuilder.setColor(Color.CYAN.getRGB());
-            webhookEmbedBuilder.setTitle(
-                    new WebhookEmbed.EmbedTitle(
-                            ConfigManager.Message.userActivity.toString(),
-                            null
-                    )
-            );
-            webhookEmbedBuilder.setDescription(
-                    ConfigManager.Message.serverSwitched.toString()
-                            .replace("{name}", player.getName())
-                            .replace("{server}", player.getServer().getInfo().getName())
-            );
-            webhookManager.sendMessage(player.getName(), avatarURL, webhookEmbedBuilder.build());
-        }
+        WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
+        webhookEmbedBuilder.setAuthor(
+                new WebhookEmbed.EmbedAuthor(player.getName(), avatarURL, null)
+        );
+        webhookEmbedBuilder.setColor(Color.CYAN.getRGB());
+        webhookEmbedBuilder.setTitle(
+                new WebhookEmbed.EmbedTitle(
+                        ConfigManager.Message.userActivity.toString(),
+                        null
+                )
+        );
+        webhookEmbedBuilder.setDescription(
+                ConfigManager.Message.serverSwitched.toString()
+                        .replace("{name}", player.getName())
+                        .replace("{server}", player.getServer().getInfo().getName())
+        );
+
+        discordWebhookSenders.forEach(sender -> sender.sendMessage(
+                player.getName(),
+                avatarURL,
+                webhookEmbedBuilder.build()
+        ));
     }
 
     /**

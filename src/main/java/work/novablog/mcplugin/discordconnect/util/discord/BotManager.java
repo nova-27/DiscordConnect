@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class BotManager implements EventListener {
     private final JDA bot;
     private final List<Long> chatChannelIds;
-    private List<DiscordSender> chatChannelSenders;
+    private List<DiscordBotSender> chatChannelSenders;
     private final String playingGameName;
 
     private boolean isActive;
@@ -86,7 +86,7 @@ public class BotManager implements EventListener {
 
         //送信完了まで待機
         if(chatChannelSenders != null) {
-            chatChannelSenders.forEach(DiscordSender::interrupt);
+            chatChannelSenders.forEach(DiscordBotSender::interrupt);
             chatChannelSenders.forEach(sender -> {
                 try {
                     sender.join();
@@ -108,7 +108,7 @@ public class BotManager implements EventListener {
             chatChannelSenders = chatChannelIds.stream()
                     .map(id -> {
                         TextChannel chatChannel = bot.getTextChannelById(id);
-                        return chatChannel == null ? null : new DiscordSender(chatChannel);
+                        return chatChannel == null ? null : new DiscordBotSender(chatChannel);
                     })
                     .collect(Collectors.toList());
             if(chatChannelSenders.contains(null)) {
@@ -183,7 +183,6 @@ public class BotManager implements EventListener {
      * @param footerIcon フッターのアイコン
      * @param image 画像
      * @param thumbnail サムネイル
-     * @deprecated
      */
     public void sendMessageToChatChannel(String title, String titleUrl, String desc, Color color, @NotNull List<MessageEmbed.Field> embedFields, String author, String authorUrl, String authorIcon, String footer, String footerIcon, String image, String thumbnail) {
         EmbedBuilder eb = new EmbedBuilder();
