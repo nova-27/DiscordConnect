@@ -2,6 +2,7 @@ package work.novablog.mcplugin.discordconnect;
 
 import com.github.ucchyocean.lc3.LunaChatAPI;
 import com.github.ucchyocean.lc3.LunaChatBungee;
+import com.github.ucchyocean.lc3.UUIDCacheData;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -31,6 +32,7 @@ public final class DiscordConnect extends Plugin {
     private ChatCasterListener chatCasterListener;
 
     private LunaChatAPI lunaChatAPI;
+    private UUIDCacheData uuidCacheData;
     private LunaChatListener lunaChatListener;
 
     /**
@@ -47,6 +49,14 @@ public final class DiscordConnect extends Plugin {
      */
     public @Nullable BotManager getBotManager() {
         return botManager;
+    }
+
+    /**
+     * Webhookマネージャーを返します
+     * @return webhookマネージャー
+     */
+    public @Nullable WebhookManager getWebhookManager() {
+        return webhookManager;
     }
 
     /**
@@ -89,6 +99,7 @@ public final class DiscordConnect extends Plugin {
         //LunaChatと連携
         temp = getProxy().getPluginManager().getPlugin("LunaChat");
         if(temp instanceof LunaChatBungee) {
+            uuidCacheData = ((LunaChatBungee) temp).getUUIDCacheData();
             lunaChatAPI = ((LunaChatBungee) temp).getLunaChatAPI();
         }
 
@@ -144,7 +155,7 @@ public final class DiscordConnect extends Plugin {
         bungeeListener = new BungeeListener(configManager.sendToDiscordFormat);
         getProxy().getPluginManager().registerListener(this, bungeeListener);
         if(lunaChatAPI != null) {
-            lunaChatListener = new LunaChatListener(configManager.sendToDiscordFormat, configManager.lunaChatJapanizeFormat);
+            lunaChatListener = new LunaChatListener(configManager.sendToDiscordFormat, configManager.lunaChatJapanizeFormat, uuidCacheData);
             getProxy().getPluginManager().registerListener(this, lunaChatListener);
         }
         if(chatCasterAPI != null) {

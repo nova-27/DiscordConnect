@@ -44,10 +44,16 @@ public class WebhookManager {
 
     /**
      * Webhookで埋め込みメッセージを送信します
+     * @param userName 送信者の名前
+     * @param avatarUrl 送信者のアバターURL
      * @param embedMessage 送信する埋め込みメッセージ
      */
-    public void sendMessage(@NotNull WebhookEmbed embedMessage) {
-        client.send(embedMessage);
+    public void sendMessage(@Nullable String userName, @Nullable String avatarUrl, @NotNull WebhookEmbed embedMessage) {
+        WebhookMessageBuilder builder = new WebhookMessageBuilder();
+        builder.setUsername(userName);
+        builder.setAvatarUrl(avatarUrl);
+        builder.addEmbeds(embedMessage);
+        client.send(builder.build());
     }
 
     /**

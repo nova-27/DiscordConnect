@@ -126,7 +126,7 @@ public class ConfigManager {
         serverSwitched;
 
         /**
-         * propertiesファイルからメッセージを取ってきます
+         * yamlファイルからメッセージを取ってきます
          * @return 多言語対応メッセージ
          */
         @Override
