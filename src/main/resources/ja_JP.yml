@@ -28,7 +28,7 @@ proxyStopped: ":no_entry_sign: BungeeCordプロキシが停止しました！"
 
 joined: ":tada: {name}がサーバーに参加しました"
 left: ":wave: {name}がサーバーから退出しました"
-serverSwitched: "twisted_rightwards_arrows: {name}が{server}サーバーへ移動しました"
+serverSwitched: ":twisted_rightwards_arrows: {name}が{server}サーバーへ移動しました"
 
 # ServerEnabled = :white_check_mark: {server}サーバーが有効になりました
 # ServerDisabled = :white_check_mark: {server}サーバーが無効になりました
