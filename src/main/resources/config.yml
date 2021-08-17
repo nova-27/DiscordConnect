@@ -14,4 +14,4 @@ updateCheck: true
 japanizeFormat: "*({server})* **{sender}** __JP__: {japanized}"
 
 # この値は変更しないでください！ (Don't change the value!)
-configVersion: 3
+configVersion: 4

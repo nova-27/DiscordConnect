@@ -1,5 +1,5 @@
 name: DiscordConnect
-version: "2.3"
+version: "3.0"
 author: nova27
 main: work.novablog.mcplugin.discordconnect.DiscordConnect
 description: "Mutual chat transmission between Discord and Minecraft."
