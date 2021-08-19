@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.Thread.sleep;
+
 /**
  * DiscordBotの管理を行う
  */
@@ -83,6 +85,12 @@ public class BotManager implements EventListener {
                     null,
                     null
                 );
+            //送信完了を待つ
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         //送信完了まで待機
