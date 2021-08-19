@@ -85,13 +85,16 @@ public class DiscordListener extends ListenerAdapter {
             StringJoiner sj = new StringJoiner("\n");
             receivedMessage.getMessage().getAttachments().forEach(attachment -> sj.add(attachment.getUrl()));
             String finalMessage = message + "\n" + sj;
-            DiscordConnect.getInstance().getDiscordWebhookSenders().forEach(sender ->
-                    sender.sendMessage(
-                            receivedMessage.getAuthor().getName(),
-                            receivedMessage.getAuthor().getAvatarUrl(),
-                            finalMessage
-                    )
-            );
+            if(!finalMessage.equals("\n")) {
+                //空白でなければ送信
+                DiscordConnect.getInstance().getDiscordWebhookSenders().forEach(sender ->
+                        sender.sendMessage(
+                                receivedMessage.getAuthor().getName(),
+                                receivedMessage.getAuthor().getAvatarUrl(),
+                                finalMessage
+                        )
+                );
+            }
 
             //メッセージを削除
             receivedMessage.getMessage().delete().queue();

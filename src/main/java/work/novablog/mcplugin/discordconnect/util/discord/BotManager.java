@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
@@ -43,7 +44,7 @@ public class BotManager implements EventListener {
      */
     public BotManager(@NotNull String token, @NotNull List<Long> chatChannelIds, @NotNull String playingGameName, @NotNull String prefix, @NotNull String toMinecraftFormat) throws LoginException {
         //ログインする
-        bot = JDABuilder.createDefault(token)
+        bot = JDABuilder.create(token, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
                 .addEventListeners(this)
                 .setAutoReconnect(true)
                 .build();
