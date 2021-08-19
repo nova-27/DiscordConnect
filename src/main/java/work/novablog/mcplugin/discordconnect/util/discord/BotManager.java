@@ -42,15 +42,16 @@ public class BotManager implements EventListener {
      * @param playingGameName botのステータスに表示されるプレイ中のゲーム名
      * @param prefix コマンドのprefix
      * @param toMinecraftFormat DiscordのメッセージをBungeeCordに転送するときのフォーマット
+     * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
      * @throws LoginException botのログインに失敗した場合にthrowされます
      */
-    public BotManager(@NotNull String token, @NotNull List<Long> chatChannelIds, @NotNull String playingGameName, @NotNull String prefix, @NotNull String toMinecraftFormat) throws LoginException {
+    public BotManager(@NotNull String token, @NotNull List<Long> chatChannelIds, @NotNull String playingGameName, @NotNull String prefix, @NotNull String toMinecraftFormat, @NotNull String fromDiscordToDiscordName) throws LoginException {
         //ログインする
         bot = JDABuilder.create(token, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
                 .addEventListeners(this)
                 .setAutoReconnect(true)
                 .build();
-        bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
+        bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat, fromDiscordToDiscordName));
 
         this.chatChannelIds = chatChannelIds;
         this.playingGameName = playingGameName;

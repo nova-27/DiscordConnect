@@ -140,7 +140,8 @@ public final class DiscordConnect extends Plugin {
                     configManager.botChatChannelIds,
                     configManager.botPlayingGameName,
                     configManager.botCommandPrefix,
-                    configManager.fromDiscordToMinecraftFormat
+                    configManager.fromDiscordToMinecraftFormat,
+                    configManager.fromDiscordToDiscordName
             );
         } catch (LoginException e) {
             getLogger().severe(ConfigManager.Message.invalidToken.toString());

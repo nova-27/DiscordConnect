@@ -9,8 +9,9 @@ prefix: "!"
 updateCheck: true
 
 # Formats
-fromDiscordToMinecraftFormat: "§9[Discord§7({channel_name})§9] §f<{name}>"
-fromMinecraftToDiscordName: "MC: ({server}) {displayName}"
+fromDiscordToMinecraftFormat: "§9[Discord§7({server_name})§9] §f<{name}({tag})> "
+fromMinecraftToDiscordName: "Minecraft: ({server}) {displayName}"
+fromDiscordToDiscordName: "Discord({server_name}): {nickName}({tag})"
 
 # LunaChat使用時にのみ有効 (Only when using the LunaChat plugin)
 japanizeFormat: "*({server})* **{sender}** __JP__: {japanized}"

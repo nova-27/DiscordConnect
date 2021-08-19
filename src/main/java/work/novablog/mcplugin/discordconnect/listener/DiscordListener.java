@@ -20,15 +20,18 @@ import java.util.regex.Pattern;
 public class DiscordListener extends ListenerAdapter {
     private final String prefix;
     private final String toMinecraftFormat;
+    private final String fromDiscordToDiscordName;
 
     /**
      * Discordのイベントをリッスンするインスタンスを生成します
      * @param prefix コマンドのprefix
      * @param toMinecraftFormat DiscordのメッセージをBungeecordへ転送するときのフォーマット
+     * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
      */
-    public DiscordListener(String prefix, String toMinecraftFormat) {
+    public DiscordListener(@NotNull String prefix, @NotNull String toMinecraftFormat, @NotNull String fromDiscordToDiscordName) {
         this.prefix = prefix;
         this.toMinecraftFormat = toMinecraftFormat;
+        this.fromDiscordToDiscordName = fromDiscordToDiscordName;
     }
 
     @Override
@@ -48,21 +51,23 @@ public class DiscordListener extends ListenerAdapter {
 
             //DiscordConnect.getInstance().embed(Color.RED, "coming soon...", null);
         } else {
+            String name = receivedMessage.getAuthor().getName();
+            String nickname = Objects.requireNonNull(receivedMessage.getMember()).getNickname() == null ?
+                    name : Objects.requireNonNull(receivedMessage.getMember()).getNickname();
+
+            String formattedForMinecraft = toMinecraftFormat
+                    .replace("{name}", receivedMessage.getAuthor().getName())
+                    .replace("{nickName}", name)
+                    .replace("{tag}", receivedMessage.getAuthor().getAsTag())
+                    .replace("{server_name}", receivedMessage.getGuild().getName())
+                    .replace("{channel_name}", receivedMessage.getChannel().getName());
+
             //マイクラに送信
             if(!receivedMessage.getMessage().getContentRaw().equals("")) {
                 MarkComponent[] components = MarkdownConverter.fromDiscordMessage(receivedMessage.getMessage().getContentRaw());
                 List<BaseComponent> convertedMessage = Arrays.asList(MarkdownConverter.toMinecraftMessage(components));
 
-                String nickname = Objects.requireNonNull(receivedMessage.getGuild().getMember(receivedMessage.getAuthor())).getNickname();
-                if(nickname == null) nickname = receivedMessage.getAuthor().getName();
-
-                TextComponent message = new TextComponent(
-                        TextComponent.fromLegacyText(
-                                toMinecraftFormat.replace("{channel_name}", receivedMessage.getChannel().getName())
-                                        .replace("{name}", nickname)
-                        )
-                );
-                message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(receivedMessage.getAuthor().getAsTag())));
+                TextComponent message = new TextComponent(TextComponent.fromLegacyText(formattedForMinecraft));
                 List<BaseComponent> extra = message.getExtra();
                 extra.addAll(convertedMessage);
                 message.setExtra(extra);
@@ -71,16 +76,22 @@ public class DiscordListener extends ListenerAdapter {
             }
 
             receivedMessage.getMessage().getAttachments().forEach((attachment) -> {
-                TextComponent message = new TextComponent(TextComponent.fromLegacyText(toMinecraftFormat
-                        .replace("{name}", receivedMessage.getAuthor().getName())
-                        .replace("{channel_name}", receivedMessage.getChannel().getName()) +
-                        attachment.getUrl()
-                ));
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, attachment.getUrl()));
+                TextComponent url = new TextComponent(TextComponent.fromLegacyText(attachment.getUrl()));
+                url.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, attachment.getUrl()));
+                BaseComponent[] message = new ComponentBuilder()
+                        .append(formattedForMinecraft)
+                        .append(url)
+                        .create();
                 ProxyServer.getInstance().broadcast(message);
             });
 
             //Discordに再送
+            String nameField = fromDiscordToDiscordName
+                    .replace("{name}", name)
+                    .replace("{nickName}", Objects.requireNonNull(nickname))
+                    .replace("{tag}", receivedMessage.getAuthor().getAsTag())
+                    .replace("{server_name}", receivedMessage.getGuild().getName())
+                    .replace("{channel_name}", receivedMessage.getChannel().getName());
             String message = receivedMessage.getMessage().getContentRaw();
             StringJoiner sj = new StringJoiner("\n");
             receivedMessage.getMessage().getAttachments().forEach(attachment -> sj.add(attachment.getUrl()));
@@ -89,7 +100,7 @@ public class DiscordListener extends ListenerAdapter {
                 //空白でなければ送信
                 DiscordConnect.getInstance().getDiscordWebhookSenders().forEach(sender ->
                         sender.sendMessage(
-                                receivedMessage.getAuthor().getName(),
+                                nameField,
                                 receivedMessage.getAuthor().getAvatarUrl(),
                                 finalMessage
                         )

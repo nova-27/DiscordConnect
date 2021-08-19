@@ -26,6 +26,7 @@ public class ConfigManager {
 
     public String fromDiscordToMinecraftFormat;
     public String fromMinecraftToDiscordName;
+    public String fromDiscordToDiscordName;
 
     public String lunaChatJapanizeFormat;
 
@@ -61,6 +62,7 @@ public class ConfigManager {
 
         fromDiscordToMinecraftFormat = pluginConfig.getString("fromDiscordToMinecraftFormat");
         fromMinecraftToDiscordName = pluginConfig.getString("fromMinecraftToDiscordName");
+        fromDiscordToDiscordName = pluginConfig.getString("fromDiscordToDiscordName");
 
         lunaChatJapanizeFormat = pluginConfig.getString("japanizeFormat");
     }
