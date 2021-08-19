@@ -16,18 +16,18 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class LunaChatListener implements Listener {
-    private final String toDiscordFormat;
+    private final String fromMinecraftToDiscordName;
     private final String japanizeFormat;
     private final UUIDCacheData uuidCacheData;
 
     /**
      * LunaChatのイベントをリッスンするインスタンスを生成します
-     * @param toDiscordFormat プレーンメッセージをDiscordへ送信するときのフォーマット
+     * @param fromMinecraftToDiscordName マイクラからDiscordへ転送するときの名前欄のフォーマット
      * @param japanizeFormat japanizeメッセージをDiscordへ送信するときのフォーマット
      * @param uuidCacheData LunaChatから取得した、UUIDのキャッシュ
      */
-    public LunaChatListener(@NotNull String toDiscordFormat, @NotNull String japanizeFormat, @NotNull UUIDCacheData uuidCacheData) {
-        this.toDiscordFormat = toDiscordFormat;
+    public LunaChatListener(@NotNull String fromMinecraftToDiscordName, @NotNull String japanizeFormat, @NotNull UUIDCacheData uuidCacheData) {
+        this.fromMinecraftToDiscordName = fromMinecraftToDiscordName;
         this.japanizeFormat = japanizeFormat;
         this.uuidCacheData = uuidCacheData;
     }
@@ -41,21 +41,24 @@ public class LunaChatListener implements Listener {
         ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
         if(!event.getChannel().isGlobalChannel()) return;
 
-        MarkComponent[] JPcomponents = MarkdownConverter.fromMinecraftMessage(event.getJapanized(), '&');
-        String JPconvertedMessage = MarkdownConverter.toDiscordMessage(JPcomponents);
+        MarkComponent[] japanizeComponents = MarkdownConverter.fromMinecraftMessage(event.getJapanized(), '&');
+        String japanizeMessage = MarkdownConverter.toDiscordMessage(japanizeComponents);
 
-        MarkComponent[] ORcomponents = MarkdownConverter.fromMinecraftMessage(event.getOriginal(), '&');
-        String ORconvertedMessage = MarkdownConverter.toDiscordMessage(ORcomponents);
+        MarkComponent[] originalComponents = MarkdownConverter.fromMinecraftMessage(event.getOriginal(), '&');
+        String originalMessage = MarkdownConverter.toDiscordMessage(originalComponents);
 
+        String name = fromMinecraftToDiscordName
+                .replace("{name}", event.getMember().getName())
+                .replace("{displayName}", event.getMember().getDisplayName())
+                .replace("{server}", event.getMember().getServerName());
         UUID playerUuid = UUID.fromString(uuidCacheData.getUUIDFromName(event.getMember().getName()));
         String avatarUrl = ConvertUtil.getMinecraftAvatarURL(playerUuid);
-        String message = japanizeFormat.replace("{server}", event.getMember().getServerName())
-                .replace("{sender}", event.getMember().getDisplayName())
-                .replace("{japanized}", JPconvertedMessage)
-                .replace("{original}", ORconvertedMessage);
+        String message = japanizeFormat
+                .replace("{japanized}", japanizeMessage)
+                .replace("{original}", originalMessage);
 
         discordWebhookSenders.forEach(sender -> sender.sendMessage(
-                event.getMember().getDisplayName(),
+                name,
                 avatarUrl,
                 message
         ));
@@ -73,16 +76,17 @@ public class LunaChatListener implements Listener {
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getNgMaskedMessage(), '&');
         String convertedMessage = MarkdownConverter.toDiscordMessage(components);
 
+        String name = fromMinecraftToDiscordName
+                .replace("{name}", event.getMember().getName())
+                .replace("{displayName}", event.getMember().getDisplayName())
+                .replace("{server}", event.getMember().getServerName());
         UUID playerUuid = UUID.fromString(uuidCacheData.getUUIDFromName(event.getMember().getName()));
         String avatarUrl = ConvertUtil.getMinecraftAvatarURL(playerUuid);
-        String message = toDiscordFormat.replace("{server}", event.getMember().getServerName())
-                .replace("{sender}", event.getMember().getDisplayName())
-                .replace("{message}", convertedMessage);
 
         discordWebhookSenders.forEach(sender -> sender.sendMessage(
-                event.getMember().getDisplayName(),
+                name,
                 avatarUrl,
-                message
+                convertedMessage
         ));
     }
 }

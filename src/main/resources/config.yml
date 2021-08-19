@@ -6,9 +6,11 @@ chatChannelIDs:
 playingGameName: サーバー稼働中！（{players}/{max}人）
 
 prefix: "!"
-toMinecraftFormat: "§9[Discord§7({channel_name})§9] §f<{name}>"
-toDiscordFormat: "*({server})* **{sender}** : {message}"
 updateCheck: true
+
+# Formats
+fromDiscordToMinecraftFormat: "§9[Discord§7({channel_name})§9] §f<{name}>"
+fromMinecraftToDiscordName: "MC: ({server}) {displayName}"
 
 # LunaChat使用時にのみ有効 (Only when using the LunaChat plugin)
 japanizeFormat: "*({server})* **{sender}** __JP__: {japanized}"

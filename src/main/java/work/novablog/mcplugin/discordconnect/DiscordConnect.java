@@ -140,7 +140,7 @@ public final class DiscordConnect extends Plugin {
                     configManager.botChatChannelIds,
                     configManager.botPlayingGameName,
                     configManager.botCommandPrefix,
-                    configManager.sendToMinecraftFormat
+                    configManager.fromDiscordToMinecraftFormat
             );
         } catch (LoginException e) {
             getLogger().severe(ConfigManager.Message.invalidToken.toString());
@@ -156,14 +156,14 @@ public final class DiscordConnect extends Plugin {
         }
 
         //BungeecordイベントのListenerを登録
-        bungeeListener = new BungeeListener(configManager.sendToDiscordFormat);
+        bungeeListener = new BungeeListener(configManager.fromMinecraftToDiscordName);
         getProxy().getPluginManager().registerListener(this, bungeeListener);
         if(lunaChatAPI != null) {
-            lunaChatListener = new LunaChatListener(configManager.sendToDiscordFormat, configManager.lunaChatJapanizeFormat, uuidCacheData);
+            lunaChatListener = new LunaChatListener(configManager.fromMinecraftToDiscordName, configManager.lunaChatJapanizeFormat, uuidCacheData);
             getProxy().getPluginManager().registerListener(this, lunaChatListener);
         }
         if(chatCasterAPI != null) {
-            chatCasterListener = new ChatCasterListener();
+            chatCasterListener = new ChatCasterListener(configManager.fromMinecraftToDiscordName);
             getProxy().getPluginManager().registerListener(this, chatCasterListener);
         }
 

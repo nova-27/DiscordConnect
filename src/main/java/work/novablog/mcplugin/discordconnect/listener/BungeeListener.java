@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class BungeeListener implements Listener {
-    private final String toDiscordFormat;
+    private final String fromMinecraftToDiscordName;
 
     /**
      * bungeecordのイベントを受け取るインスタンスを生成します
-     * @param toDiscordFormat プレーンメッセージをDiscordへ送信するときのフォーマット
+     * @param fromMinecraftToDiscordName マイクラからDiscordへ転送するときの名前欄のフォーマット
      */
-    public BungeeListener(String toDiscordFormat) {
-        this.toDiscordFormat = toDiscordFormat;
+    public BungeeListener(@NotNull String fromMinecraftToDiscordName) {
+        this.fromMinecraftToDiscordName = fromMinecraftToDiscordName;
     }
 
     /**
@@ -45,7 +45,10 @@ public class BungeeListener implements Listener {
         LunaChatAPI lunaChatAPI = DiscordConnect.getInstance().getLunaChatAPI();
         if ((chatCasterApi == null || !chatCasterApi.isEnabledChatCaster()) && lunaChatAPI == null) {
             // 連携プラグインが無効の場合
-            String name = ((ProxiedPlayer)event.getSender()).getName();
+            String name = fromMinecraftToDiscordName
+                    .replace("{name}", ((ProxiedPlayer) event.getSender()).getName())
+                    .replace("{displayName}", ((ProxiedPlayer)event.getSender()).getDisplayName())
+                    .replace("{server}", ((ProxiedPlayer)event.getSender()).getServer().getInfo().getName());
             String avatarURL = ConvertUtil.getMinecraftAvatarURL(((ProxiedPlayer) event.getSender()).getUniqueId());
 
             MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getMessage(), '&');
@@ -67,12 +70,15 @@ public class BungeeListener implements Listener {
     public void onLogin(LoginEvent e) {
         ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
-        String name = e.getConnection().getName();
+        String name = fromMinecraftToDiscordName
+                .replace("{name}", e.getConnection().getName())
+                .replace("{displayName}", e.getConnection().getName())
+                .replace("{server}", "unknown");
         String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getConnection().getUniqueId());
 
         WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
         webhookEmbedBuilder.setAuthor(
-                new WebhookEmbed.EmbedAuthor(name, avatarURL, null)
+                new WebhookEmbed.EmbedAuthor(e.getConnection().getName(), avatarURL, null)
         );
         webhookEmbedBuilder.setColor(Color.GREEN.getRGB());
         webhookEmbedBuilder.setTitle(
@@ -82,7 +88,7 @@ public class BungeeListener implements Listener {
                 )
         );
         webhookEmbedBuilder.setDescription(
-                ConfigManager.Message.joined.toString().replace("{name}", name)
+                ConfigManager.Message.joined.toString().replace("{name}", e.getConnection().getName())
         );
 
         discordWebhookSenders.forEach(sender -> sender.sendMessage(
@@ -105,12 +111,15 @@ public class BungeeListener implements Listener {
     public void onLogout(PlayerDisconnectEvent e) {
         ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
-        String name = e.getPlayer().getName();
+        String name = fromMinecraftToDiscordName
+                .replace("{name}", e.getPlayer().getName())
+                .replace("{displayName}", e.getPlayer().getDisplayName())
+                .replace("{server}", e.getPlayer().getServer().getInfo().getName());
         String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
 
         WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
         webhookEmbedBuilder.setAuthor(
-                new WebhookEmbed.EmbedAuthor(name, avatarURL, null)
+                new WebhookEmbed.EmbedAuthor(e.getPlayer().getName(), avatarURL, null)
         );
         webhookEmbedBuilder.setColor(Color.RED.getRGB());
         webhookEmbedBuilder.setTitle(
@@ -120,7 +129,7 @@ public class BungeeListener implements Listener {
                 )
         );
         webhookEmbedBuilder.setDescription(
-                ConfigManager.Message.left.toString().replace("{name}", name)
+                ConfigManager.Message.left.toString().replace("{name}", e.getPlayer().getName())
         );
 
         discordWebhookSenders.forEach(sender -> sender.sendMessage(
@@ -143,12 +152,15 @@ public class BungeeListener implements Listener {
     public void onSwitch(ServerSwitchEvent e) {
         ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
-        ProxiedPlayer player = e.getPlayer();
+        String name = fromMinecraftToDiscordName
+                .replace("{name}", e.getPlayer().getName())
+                .replace("{displayName}", e.getPlayer().getDisplayName())
+                .replace("{server}", e.getPlayer().getServer().getInfo().getName());
         String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
 
         WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
         webhookEmbedBuilder.setAuthor(
-                new WebhookEmbed.EmbedAuthor(player.getName(), avatarURL, null)
+                new WebhookEmbed.EmbedAuthor(e.getPlayer().getName(), avatarURL, null)
         );
         webhookEmbedBuilder.setColor(Color.CYAN.getRGB());
         webhookEmbedBuilder.setTitle(
@@ -159,12 +171,12 @@ public class BungeeListener implements Listener {
         );
         webhookEmbedBuilder.setDescription(
                 ConfigManager.Message.serverSwitched.toString()
-                        .replace("{name}", player.getName())
-                        .replace("{server}", player.getServer().getInfo().getName())
+                        .replace("{name}", e.getPlayer().getName())
+                        .replace("{server}", e.getPlayer().getServer().getInfo().getName())
         );
 
         discordWebhookSenders.forEach(sender -> sender.sendMessage(
-                player.getName(),
+                name,
                 avatarURL,
                 webhookEmbedBuilder.build()
         ));

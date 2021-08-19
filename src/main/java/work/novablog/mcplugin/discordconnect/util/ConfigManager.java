@@ -17,14 +17,17 @@ public class ConfigManager {
     private static Configuration langData;
 
     public String botToken;
+    public List<String> botWebhookURLs;
     public List<Long> botChatChannelIds;
     public String botPlayingGameName;
+
     public String botCommandPrefix;
-    public String sendToMinecraftFormat;
-    public String sendToDiscordFormat;
-    public String lunaChatJapanizeFormat;
-    public List<String> botWebhookURLs;
     public boolean doUpdateCheck;
+
+    public String fromDiscordToMinecraftFormat;
+    public String fromMinecraftToDiscordName;
+
+    public String lunaChatJapanizeFormat;
 
     /**
      * configの読み出し、保持を行うインスタンスを生成します
@@ -49,14 +52,17 @@ public class ConfigManager {
 
         //configの読み出し
         botToken = pluginConfig.getString("token");
+        botWebhookURLs = pluginConfig.getStringList("webhookURLs");
         botChatChannelIds = pluginConfig.getLongList("chatChannelIDs");
         botPlayingGameName = pluginConfig.getString("playingGameName");
+
         botCommandPrefix = pluginConfig.getString("prefix");
-        sendToMinecraftFormat = pluginConfig.getString("toMinecraftFormat");
-        sendToDiscordFormat = pluginConfig.getString("toDiscordFormat");
-        lunaChatJapanizeFormat = pluginConfig.getString("japanizeFormat");
-        botWebhookURLs = pluginConfig.getStringList("webhookURLs");
         doUpdateCheck = pluginConfig.getBoolean("updateCheck");
+
+        fromDiscordToMinecraftFormat = pluginConfig.getString("fromDiscordToMinecraftFormat");
+        fromMinecraftToDiscordName = pluginConfig.getString("fromMinecraftToDiscordName");
+
+        lunaChatJapanizeFormat = pluginConfig.getString("japanizeFormat");
     }
 
     private Configuration getConfigData(Plugin plugin) throws IOException {
