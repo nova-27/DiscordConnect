@@ -38,8 +38,8 @@ public class LunaChatListener implements Listener {
      */
     @EventHandler
     public void onJapanizeChat(LunaChatBungeePostJapanizeEvent event) {
-        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
         if(!event.getChannel().isGlobalChannel()) return;
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
         MarkComponent[] japanizeComponents = MarkdownConverter.fromMinecraftMessage(event.getJapanized(), '&');
         String japanizeMessage = MarkdownConverter.toDiscordMessage(japanizeComponents);
@@ -70,8 +70,8 @@ public class LunaChatListener implements Listener {
      */
     @EventHandler
     public void onChat(LunaChatBungeeChannelChatEvent event) {
-        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
         if(!event.getChannel().isGlobalChannel()) return;
+        ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getNgMaskedMessage(), '&');
         String convertedMessage = MarkdownConverter.toDiscordMessage(components);

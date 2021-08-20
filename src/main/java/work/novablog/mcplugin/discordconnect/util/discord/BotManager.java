@@ -12,12 +12,12 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
+import work.novablog.mcplugin.discordconnect.command.DiscordCommandExecutor;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,8 +43,8 @@ public class BotManager implements EventListener {
      * @param prefix コマンドのprefix
      * @param toMinecraftFormat DiscordのメッセージをBungeeCordに転送するときのフォーマット
      * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
-     * @param adminRole コマンドを実行できる管理者のロール
-     * @throws LoginException botのログインに失敗した場合にthrowされます
+     * @param discordCommandExecutor discordのコマンドの解析や実行を行うインスタンス
+     * @throws LoginException botのログインに失敗した場合
      */
     public BotManager(
             @NotNull String token,
@@ -53,14 +53,16 @@ public class BotManager implements EventListener {
             @NotNull String prefix,
             @NotNull String toMinecraftFormat,
             @NotNull String fromDiscordToDiscordName,
-            @NotNull String adminRole
+            @NotNull DiscordCommandExecutor discordCommandExecutor
     ) throws LoginException {
         //ログインする
         bot = JDABuilder.create(token, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
                 .addEventListeners(this)
                 .setAutoReconnect(true)
                 .build();
-        bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat, fromDiscordToDiscordName, adminRole));
+        bot.addEventListener(
+                new DiscordListener(prefix, toMinecraftFormat, fromDiscordToDiscordName, discordCommandExecutor)
+        );
 
         this.chatChannelIds = chatChannelIds;
         this.playingGameName = playingGameName;
@@ -69,8 +71,8 @@ public class BotManager implements EventListener {
 
     /**
      * botをシャットダウンします
-     * @param isRestart botの再起動(reload)かどうか
-     *                  trueの場合、プロキシの開始・停止メッセージが表示されません
+     * @param isRestart botの再起動かどうか
+     *                  trueの場合、プロキシの開始・停止メッセージが表示されません。
      */
     public void botShutdown(boolean isRestart) {
         if(!isActive) return;
@@ -81,20 +83,13 @@ public class BotManager implements EventListener {
 
         if(!isRestart && chatChannelSenders != null) {
             //プロキシ終了メッセージ
-            sendMessageToChatChannel(
-                    ConfigManager.Message.serverActivity.toString(),
-                    null,
-                    ConfigManager.Message.proxyStopped.toString(),
-                    new Color(102, 205, 170),
-                    new ArrayList<>(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                );
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle(ConfigManager.Message.serverActivity.toString());
+            eb.setColor(new Color(102, 205, 170));
+            eb.setDescription(ConfigManager.Message.proxyStopped.toString());
+            MessageEmbed message = eb.build();
+            getChatChannelSenders().forEach(sender -> sender.addQueue(message));
+
             //送信完了を待つ
             try {
                 sleep(1000);
@@ -153,20 +148,13 @@ public class BotManager implements EventListener {
                 return;
             }
 
-            sendMessageToChatChannel(
-                    ConfigManager.Message.serverActivity.toString(),
-                    null,
-                    ConfigManager.Message.proxyStarted.toString(),
-                    new Color(102, 205, 170),
-                    new ArrayList<>(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );}
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle(ConfigManager.Message.serverActivity.toString());
+            eb.setColor(new Color(102, 205, 170));
+            eb.setDescription(ConfigManager.Message.proxyStarted.toString());
+            MessageEmbed message = eb.build();
+            getChatChannelSenders().forEach(sender -> sender.addQueue(message));
+        }
     }
 
     /**
@@ -178,36 +166,6 @@ public class BotManager implements EventListener {
      */
     public boolean isActive() {
         return isActive;
-    }
-
-    /**
-     * チャットチャンネルへ埋め込みメッセージを送信
-     * @param title タイトル
-     * @param titleUrl タイトルのリンクURL
-     * @param desc 説明
-     * @param color 色
-     * @param embedFields フィールド
-     * @param author 送信者の名前
-     * @param authorUrl 送信者のリンクURL
-     * @param authorIcon 送信者のアイコン
-     * @param footer フッター
-     * @param footerIcon フッターのアイコン
-     * @param image 画像
-     * @param thumbnail サムネイル
-     */
-    public void sendMessageToChatChannel(String title, String titleUrl, String desc, Color color, @NotNull List<MessageEmbed.Field> embedFields, String author, String authorUrl, String authorIcon, String footer, String footerIcon, String image, String thumbnail) {
-        EmbedBuilder eb = new EmbedBuilder();
-
-        eb.setTitle(title, titleUrl);
-        eb.setColor(color);
-        eb.setDescription(desc);
-        embedFields.forEach(eb::addField);
-        eb.setAuthor(author, authorUrl, authorIcon);
-        eb.setFooter(footer, footerIcon);
-        eb.setImage(image);
-        eb.setThumbnail(thumbnail);
-
-        chatChannelSenders.forEach(sender -> sender.addQueue(eb.build()));
     }
 
     /**

@@ -28,13 +28,18 @@ public class DiscordListener extends ListenerAdapter {
      * @param prefix コマンドのprefix
      * @param toMinecraftFormat DiscordのメッセージをBungeecordへ転送するときのフォーマット
      * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
-     * @param adminRole コマンドを実行できる管理者のロール
+     * @param discordCommandExecutor discordのコマンドの解析や実行を行うインスタンス
      */
-    public DiscordListener(@NotNull String prefix, @NotNull String toMinecraftFormat, @NotNull String fromDiscordToDiscordName, @NotNull String adminRole) {
+    public DiscordListener(
+            @NotNull String prefix,
+            @NotNull String toMinecraftFormat,
+            @NotNull String fromDiscordToDiscordName,
+            @NotNull DiscordCommandExecutor discordCommandExecutor
+    ) {
         this.prefix = prefix;
         this.toMinecraftFormat = toMinecraftFormat;
         this.fromDiscordToDiscordName = fromDiscordToDiscordName;
-        discordCommandExecutor = new DiscordCommandExecutor(adminRole);
+        this.discordCommandExecutor = discordCommandExecutor;
     }
 
     @Override
@@ -48,7 +53,8 @@ public class DiscordListener extends ListenerAdapter {
         if (receivedMessage.getMessage().getContentRaw().startsWith(prefix)) {
             //コマンド
             String alias = receivedMessage.getMessage().getContentRaw().replace(prefix, "").split("\\s+")[0];
-            String[] args = receivedMessage.getMessage().getContentRaw().replaceAll(Pattern.quote(prefix + alias) + "\\s*", "").split("\\s+");
+            String[] args = receivedMessage.getMessage().getContentRaw()
+                    .replaceAll(Pattern.quote(prefix + alias) + "\\s*", "").split("\\s+");
             if(args[0].equals("")) {
                 args = new String[0];
             }
@@ -68,7 +74,8 @@ public class DiscordListener extends ListenerAdapter {
 
             //マイクラに送信
             if(!receivedMessage.getMessage().getContentRaw().equals("")) {
-                MarkComponent[] components = MarkdownConverter.fromDiscordMessage(receivedMessage.getMessage().getContentRaw());
+                MarkComponent[] components =
+                        MarkdownConverter.fromDiscordMessage(receivedMessage.getMessage().getContentRaw());
                 List<BaseComponent> convertedMessage = Arrays.asList(MarkdownConverter.toMinecraftMessage(components));
 
                 TextComponent message = new TextComponent(TextComponent.fromLegacyText(formattedForMinecraft));

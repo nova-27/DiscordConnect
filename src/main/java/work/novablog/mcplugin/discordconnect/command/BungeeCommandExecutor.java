@@ -18,7 +18,8 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
     /**
      * Bungeecordコマンドの解析や処理の呼び出しを行うインスタンスを生成します
      * @param name コマンド名
-     * @param permission コマンドを実行するための権限 nullまたは空文字の場合すべての人に実行権限を与えます
+     * @param permission コマンドを実行するための権限
+     *                   {@code null}または空文字の場合すべての人に実行権限を与えます。
      * @param aliases コマンドに結び付けられるエイリアス
      */
     public BungeeCommandExecutor(@NotNull String name, @Nullable String permission, @NotNull String... aliases) {
@@ -29,7 +30,10 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
 
     /**
      * サブコマンドを追加します
-     * @param subCommand サブコマンド
+     * <p>
+     *     サブコマンドは "/(alias) {@link BungeeSubCommandSettings#alias}" コマンドで実行されます。
+     * </p>
+     * @param subCommand サブコマンドの設定
      */
     public void addSubCommand(@NotNull BungeeCommandExecutor.BungeeSubCommandSettings subCommand) {
         subCommands.add(subCommand);
@@ -115,10 +119,10 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
          * サブコマンドの設定等を保持するインスタンスを生成します
          * @param alias サブコマンドのエイリアス
          * @param subPermission コマンドを実行するための権限
-         *                      nullまたは空文字の場合
+         *                      {@code null}または空文字の場合
          *                      {@link BungeeCommandExecutor#permission}権限を持っている
          *                      すべての人に実行権限を与えます
-         *                      {@link BungeeCommandExecutor#permission}がnullまたは空文字の場合
+         *                      {@link BungeeCommandExecutor#permission}が{@code null}または空文字の場合
          *                      subPermission引数が何であれすべての人に実行権限を与えます
          * @param action 実行する処理
          */
@@ -133,7 +137,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         /**
          * デフォルトのコマンドであるか設定します
          * <p>
-         *     サブコマンドのエイリアスを指定せずにコマンドを実行した際に、デフォルトコマンドの処理が実行されます
+         *     サブコマンドのエイリアスを指定せずにコマンドを実行した際に、デフォルトコマンドの処理が実行されます。
          * </p>
          * @param isDefault trueでデフォルトにする
          */
@@ -145,7 +149,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         /**
          * 必要な引数の数を設定します
          * <p>
-         *     コマンド実行時、引数の数が足りていなかったらエラーメッセージが出ます
+         *     コマンド実行時、引数の数が足りていなかったらエラーメッセージが出ます。
          * </p>
          * @param cnt 引数の数
          */

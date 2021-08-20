@@ -9,6 +9,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import org.bstats.bungeecord.Metrics;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.command.BungeeCommand;
+import work.novablog.mcplugin.discordconnect.command.DiscordCommandExecutor;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
@@ -28,6 +29,7 @@ public final class DiscordConnect extends Plugin {
     private static DiscordConnect instance;
     private BotManager botManager;
     private ArrayList<DiscordWebhookSender> discordWebhookSenders;
+    private DiscordCommandExecutor discordCommandExecutor;
     private BungeeListener bungeeListener;
 
     private N8ChatCasterAPI chatCasterAPI;
@@ -108,6 +110,7 @@ public final class DiscordConnect extends Plugin {
 
         //コマンドの追加
         getProxy().getPluginManager().registerCommand(this, new BungeeCommand());
+        discordCommandExecutor = new DiscordCommandExecutor();
 
         init();
     }
@@ -134,6 +137,8 @@ public final class DiscordConnect extends Plugin {
             return;
         }
 
+        discordCommandExecutor.setAdminRole(configManager.adminRole);
+
         try {
             botManager = new BotManager(
                     configManager.botToken,
@@ -142,7 +147,7 @@ public final class DiscordConnect extends Plugin {
                     configManager.botCommandPrefix,
                     configManager.fromDiscordToMinecraftFormat,
                     configManager.fromDiscordToDiscordName,
-                    configManager.adminRole
+                    discordCommandExecutor
             );
         } catch (LoginException e) {
             getLogger().severe(ConfigManager.Message.invalidToken.toString());
@@ -161,7 +166,11 @@ public final class DiscordConnect extends Plugin {
         bungeeListener = new BungeeListener(configManager.fromMinecraftToDiscordName);
         getProxy().getPluginManager().registerListener(this, bungeeListener);
         if(lunaChatAPI != null) {
-            lunaChatListener = new LunaChatListener(configManager.fromMinecraftToDiscordName, configManager.lunaChatJapanizeFormat, uuidCacheData);
+            lunaChatListener = new LunaChatListener(
+                    configManager.fromMinecraftToDiscordName,
+                    configManager.lunaChatJapanizeFormat,
+                    uuidCacheData
+            );
             getProxy().getPluginManager().registerListener(this, lunaChatListener);
         }
         if(chatCasterAPI != null) {

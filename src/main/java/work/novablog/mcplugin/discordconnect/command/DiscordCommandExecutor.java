@@ -17,23 +17,43 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class DiscordCommandExecutor {
-    private final String adminRole;
+    private String adminRole;
     private final ArrayList<DiscordCommandSettings> commands;
 
     /**
      * Discordコマンドの解析や処理の呼び出しを行うインスタンスを生成します
-     * @param adminRole 管理者のロール名
      */
-    public DiscordCommandExecutor(@NotNull String adminRole) {
-        this.adminRole = adminRole;
+    public DiscordCommandExecutor() {
         commands = new ArrayList<>();
     }
 
     /**
-     * Discordコマンドを登録します
-     * @param listener discordコマンドを処理するリスナー
+     * 管理者のロール名を設定します
+     * <p>
+     *     {@link DiscordCommandSettings#onlyAdmin onlyAdmin}が{@code true}のコマンドは
+     *     管理者のロールがついたメンバーだけが実行できます。
+     * </p>
+     * @param adminRole 管理者のロール名
      */
-    public void registerCommand(@NotNull DiscordCommandListener listener) {
+    public void setAdminRole(@NotNull String adminRole) {
+        this.adminRole = adminRole;
+    }
+
+    /**
+     * Discordコマンドを登録します
+     * <p>
+     *     {@code listener}のメソッドは次のルールに従ってください。
+     *     <ul>
+     *         <li>{@link DiscordCommandAnnotation}アノテーションをつける</li>
+     *         <li>割当済みのエイリアスは{@link DiscordCommandAnnotation#value()}に指定しない</li>
+     *         <li>第一引数は{@link Member}</li>
+     *         <li>第二引数は{@code String[]}</li>
+     *     </ul>
+     * </p>
+     * @param listener discordコマンドを処理するリスナー
+     * @throws IllegalArgumentException {@code listener}のメソッドが上記ルールに従っていない場合
+     */
+    public void registerCommand(@NotNull DiscordCommandListener listener) throws IllegalArgumentException {
         for (Method m : listener.getClass().getMethods()) {
             DiscordCommandAnnotation discordCommandAnnotation = m.getAnnotation(DiscordCommandAnnotation.class);
             if(discordCommandAnnotation == null) continue;
@@ -54,15 +74,19 @@ public class DiscordCommandExecutor {
                 throw new IllegalArgumentException("the alias is already used.");
             }
 
-            DiscordCommandSettings newCommand = new DiscordCommandSettings(alias, m, listener, discordCommandAnnotation.onlyAdmin());
-            newCommand.requireArgs(discordCommandAnnotation.requireArgs());
+            DiscordCommandSettings newCommand =
+                    new DiscordCommandSettings(alias, m, listener, discordCommandAnnotation.onlyAdmin())
+                            .requireArgs(discordCommandAnnotation.requireArgs());
             commands.add(newCommand);
         }
     }
 
     /**
      * コマンドの解析、呼び出しを行います
-     * @param e メッセージ
+     * <p>
+     *     通常{@link work.novablog.mcplugin.discordconnect.listener.DiscordListener}によって呼び出されます。
+     * </p>
+     * @param e イベント情報
      * @param alias コマンドのエイリアス
      * @param args コマンドの引数
      */
@@ -124,8 +148,8 @@ public class DiscordCommandExecutor {
          * コマンドの設定等を保持するインスタンスを生成します
          * @param alias コマンドのエイリアス
          * @param action 実行する処理
-         * @param instance actionメソッドを含むクラスのインスタンス
-         *                 action.invoke メソッド呼び出し時に利用されます
+         * @param instance {@code action}メソッドを含むクラスのインスタンス
+         *                 {@code action.invoke()}メソッド呼び出し時に利用されます。
          * @param onlyAdmin trueの場合コマンドを実行できるのは管理者だけ
          */
         public DiscordCommandSettings(@NotNull String alias, @NotNull Method action, @NotNull Object instance, boolean onlyAdmin) {
@@ -139,7 +163,7 @@ public class DiscordCommandExecutor {
         /**
          * 必要な引数の数を設定します
          * <p>
-         *     コマンド実行時、引数の数が足りていなかったらエラーメッセージが出ます
+         *     コマンド実行時、引数の数が足りていなかったらエラーメッセージが出ます。
          * </p>
          * @param cnt 引数の数
          */
@@ -153,7 +177,7 @@ public class DiscordCommandExecutor {
          * @param member 実行した人
          * @param args 引数
          */
-        public void execute(Member member, String[] args) {
+        public void execute(@NotNull Member member, @NotNull String[] args) {
             try {
                 action.invoke(instance, member, args);
             } catch (IllegalAccessException | InvocationTargetException e) {
