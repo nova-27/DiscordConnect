@@ -43,15 +43,24 @@ public class BotManager implements EventListener {
      * @param prefix コマンドのprefix
      * @param toMinecraftFormat DiscordのメッセージをBungeeCordに転送するときのフォーマット
      * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
+     * @param adminRole コマンドを実行できる管理者のロール
      * @throws LoginException botのログインに失敗した場合にthrowされます
      */
-    public BotManager(@NotNull String token, @NotNull List<Long> chatChannelIds, @NotNull String playingGameName, @NotNull String prefix, @NotNull String toMinecraftFormat, @NotNull String fromDiscordToDiscordName) throws LoginException {
+    public BotManager(
+            @NotNull String token,
+            @NotNull List<Long> chatChannelIds,
+            @NotNull String playingGameName,
+            @NotNull String prefix,
+            @NotNull String toMinecraftFormat,
+            @NotNull String fromDiscordToDiscordName,
+            @NotNull String adminRole
+    ) throws LoginException {
         //ログインする
         bot = JDABuilder.create(token, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
                 .addEventListeners(this)
                 .setAutoReconnect(true)
                 .build();
-        bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat, fromDiscordToDiscordName));
+        bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat, fromDiscordToDiscordName, adminRole));
 
         this.chatChannelIds = chatChannelIds;
         this.playingGameName = playingGameName;
@@ -172,14 +181,6 @@ public class BotManager implements EventListener {
     }
 
     /**
-     * チャットチャンネルへメッセージを送信します
-     * @param mes 送信するメッセージ
-     */
-    public void sendMessageToChatChannel(@NotNull String mes) {
-        chatChannelSenders.forEach(sender -> sender.addQueue(mes));
-    }
-
-    /**
      * チャットチャンネルへ埋め込みメッセージを送信
      * @param title タイトル
      * @param titleUrl タイトルのリンクURL
@@ -210,11 +211,11 @@ public class BotManager implements EventListener {
     }
 
     /**
-     * チャットチャンネルのIDリストを取得します
-     * @return IDリスト
+     * チャットチャンネルをすべて返します
+     * @return チャットチャンネルの送信インスタンス
      */
-    public List<Long> getChatChannelIds() {
-        return chatChannelIds;
+    public List<DiscordBotSender> getChatChannelSenders() {
+        return chatChannelSenders;
     }
 
     /**

@@ -20,8 +20,13 @@ bungeeCommandHelpLine1: "§f---DiscordConnectのコマンド一覧---"
 bungeeCommandHelpHelpcmd: "§f/discon help ・・・ DiscordConnectのコマンド一覧を表示します"
 bungeeCommandHelpReloadcmd: "§f/discon reload ・・・ configを再読込します"
 
+discordCommandDenied: ":warning: このコマンドを実行できるのは管理者だけです！"
+discordCommandNotFound: ":grey_question: コマンドが見つかりません！"
+discordCommandSyntaxError: ":exclamation: 引数が足りません！ヘルプを参照してください。"
+
 userActivity: "ユーザーアクティビティ"
 serverActivity: "サーバーアクティビティ"
+command: "コマンド"
 
 proxyStarted: ":ballot_box_with_check: BungeeCordプロキシが開始しました！"
 proxyStopped: ":no_entry_sign: BungeeCordプロキシが停止しました！"

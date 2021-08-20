@@ -6,6 +6,7 @@ chatChannelIDs:
 playingGameName: サーバー稼働中！（{players}/{max}人）
 
 prefix: "!"
+adminRole: ""
 updateCheck: true
 
 # Formats

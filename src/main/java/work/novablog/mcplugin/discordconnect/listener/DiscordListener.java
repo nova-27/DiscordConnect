@@ -6,9 +6,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.*;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
+import work.novablog.mcplugin.discordconnect.command.DiscordCommandExecutor;
 import work.novablog.mcplugin.discordconnect.util.discord.BotManager;
 
 import java.util.Arrays;
@@ -21,17 +21,20 @@ public class DiscordListener extends ListenerAdapter {
     private final String prefix;
     private final String toMinecraftFormat;
     private final String fromDiscordToDiscordName;
+    private final DiscordCommandExecutor discordCommandExecutor;
 
     /**
      * Discordのイベントをリッスンするインスタンスを生成します
      * @param prefix コマンドのprefix
      * @param toMinecraftFormat DiscordのメッセージをBungeecordへ転送するときのフォーマット
      * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
+     * @param adminRole コマンドを実行できる管理者のロール
      */
-    public DiscordListener(@NotNull String prefix, @NotNull String toMinecraftFormat, @NotNull String fromDiscordToDiscordName) {
+    public DiscordListener(@NotNull String prefix, @NotNull String toMinecraftFormat, @NotNull String fromDiscordToDiscordName, @NotNull String adminRole) {
         this.prefix = prefix;
         this.toMinecraftFormat = toMinecraftFormat;
         this.fromDiscordToDiscordName = fromDiscordToDiscordName;
+        discordCommandExecutor = new DiscordCommandExecutor(adminRole);
     }
 
     @Override
@@ -39,17 +42,18 @@ public class DiscordListener extends ListenerAdapter {
         if(receivedMessage.getAuthor().isBot()) return;
         BotManager botManager = DiscordConnect.getInstance().getBotManager();
         assert botManager != null;
-        if(!botManager.getChatChannelIds().contains(receivedMessage.getChannel().getIdLong())) return;
+        if(botManager.getChatChannelSenders().stream()
+                .noneMatch(sender -> sender.getChannelID() == receivedMessage.getChannel().getIdLong())) return;
 
         if (receivedMessage.getMessage().getContentRaw().startsWith(prefix)) {
-            //コマンド TODO
-            String command = receivedMessage.getMessage().getContentRaw().replace(prefix, "").split("\\s+")[0];
-            String[] args = receivedMessage.getMessage().getContentRaw().replaceAll(Pattern.quote(prefix + command) + "\\s*", "").split("\\s+");
+            //コマンド
+            String alias = receivedMessage.getMessage().getContentRaw().replace(prefix, "").split("\\s+")[0];
+            String[] args = receivedMessage.getMessage().getContentRaw().replaceAll(Pattern.quote(prefix + alias) + "\\s*", "").split("\\s+");
             if(args[0].equals("")) {
                 args = new String[0];
             }
 
-            //DiscordConnect.getInstance().embed(Color.RED, "coming soon...", null);
+            discordCommandExecutor.parse(receivedMessage, alias, args);
         } else {
             String name = receivedMessage.getAuthor().getName();
             String nickname = Objects.requireNonNull(receivedMessage.getMember()).getNickname() == null ?

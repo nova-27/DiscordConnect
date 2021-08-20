@@ -44,6 +44,14 @@ public class DiscordBotSender extends Thread{
         queue.add(embed);
     }
 
+    /**
+     * チャンネルIDを取得します
+     * @return チャンネルID
+     */
+    public long getChannelID() {
+        return channel.getIdLong();
+    }
+
     @Override
     public void run() {
         while (!isInterrupted || !queue.isEmpty()) {

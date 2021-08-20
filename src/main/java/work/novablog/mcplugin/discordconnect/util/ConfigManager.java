@@ -22,6 +22,7 @@ public class ConfigManager {
     public String botPlayingGameName;
 
     public String botCommandPrefix;
+    public String adminRole;
     public boolean doUpdateCheck;
 
     public String fromDiscordToMinecraftFormat;
@@ -58,6 +59,7 @@ public class ConfigManager {
         botPlayingGameName = pluginConfig.getString("playingGameName");
 
         botCommandPrefix = pluginConfig.getString("prefix");
+        adminRole = pluginConfig.getString("adminRole");
         doUpdateCheck = pluginConfig.getBoolean("updateCheck");
 
         fromDiscordToMinecraftFormat = pluginConfig.getString("fromDiscordToMinecraftFormat");
@@ -122,8 +124,13 @@ public class ConfigManager {
         bungeeCommandHelpHelpcmd,
         bungeeCommandHelpReloadcmd,
 
+        discordCommandDenied,
+        discordCommandNotFound,
+        discordCommandSyntaxError,
+
         userActivity,
         serverActivity,
+        command,
 
         proxyStarted,
         proxyStopped,

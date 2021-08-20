@@ -12,7 +12,7 @@ import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 import java.util.*;
 
 public class BungeeCommandExecutor extends Command implements TabExecutor {
-    private final ArrayList<BungeeSubCommand> subCommands;
+    private final ArrayList<BungeeSubCommandSettings> subCommands;
     private final String permission;
 
     /**
@@ -31,7 +31,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
      * サブコマンドを追加します
      * @param subCommand サブコマンド
      */
-    public void addSubCommand(@NotNull BungeeSubCommand subCommand) {
+    public void addSubCommand(@NotNull BungeeCommandExecutor.BungeeSubCommandSettings subCommand) {
         subCommands.add(subCommand);
     }
 
@@ -55,7 +55,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         }
 
         //サブコマンドを選択
-        Optional<BungeeSubCommand> targetSubCommand = subCommands.stream()
+        Optional<BungeeSubCommandSettings> targetSubCommand = subCommands.stream()
                 .filter(subCommand -> subCommand.alias.equals(args[0])).findFirst();
         if(!targetSubCommand.isPresent()) {
             //エイリアスが一致するサブコマンドがない場合エラー
@@ -104,10 +104,10 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
         return match;
     }
 
-    public class BungeeSubCommand {
+    public class BungeeSubCommandSettings {
         private final String alias;
         private final String subPermission;
-        private final BungeeCommandBase action;
+        private final BungeeCommandAction action;
         private boolean isDefault;
         private int requireArgs;
 
@@ -122,7 +122,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
          *                      subPermission引数が何であれすべての人に実行権限を与えます
          * @param action 実行する処理
          */
-        public BungeeSubCommand(@NotNull String alias, @Nullable String subPermission, @NotNull BungeeCommandBase action) {
+        public BungeeSubCommandSettings(@NotNull String alias, @Nullable String subPermission, @NotNull BungeeCommandAction action) {
             this.alias = alias;
             this.subPermission = StringUtils.isEmpty(subPermission) || StringUtils.isEmpty(permission) ? null : permission + "." + subPermission;
             this.action = action;
@@ -137,7 +137,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
          * </p>
          * @param isDefault trueでデフォルトにする
          */
-        public BungeeSubCommand setDefault(boolean isDefault) {
+        public BungeeSubCommandSettings setDefault(boolean isDefault) {
             this.isDefault = isDefault;
             return this;
         }
@@ -149,7 +149,7 @@ public class BungeeCommandExecutor extends Command implements TabExecutor {
          * </p>
          * @param cnt 引数の数
          */
-        public BungeeSubCommand requireArgs(int cnt) {
+        public BungeeSubCommandSettings requireArgs(int cnt) {
             this.requireArgs = cnt;
             return this;
         }

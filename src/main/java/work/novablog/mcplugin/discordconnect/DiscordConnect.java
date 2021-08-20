@@ -8,7 +8,7 @@ import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.bstats.bungeecord.Metrics;
 import org.jetbrains.annotations.NotNull;
-import work.novablog.mcplugin.discordconnect.command.BungeeMinecraftCommand;
+import work.novablog.mcplugin.discordconnect.command.BungeeCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
@@ -107,7 +107,7 @@ public final class DiscordConnect extends Plugin {
         }
 
         //コマンドの追加
-        getProxy().getPluginManager().registerCommand(this, new BungeeMinecraftCommand());
+        getProxy().getPluginManager().registerCommand(this, new BungeeCommand());
 
         init();
     }
@@ -141,7 +141,8 @@ public final class DiscordConnect extends Plugin {
                     configManager.botPlayingGameName,
                     configManager.botCommandPrefix,
                     configManager.fromDiscordToMinecraftFormat,
-                    configManager.fromDiscordToDiscordName
+                    configManager.fromDiscordToDiscordName,
+                    configManager.adminRole
             );
         } catch (LoginException e) {
             getLogger().severe(ConfigManager.Message.invalidToken.toString());

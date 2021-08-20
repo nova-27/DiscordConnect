@@ -2,7 +2,7 @@ package work.novablog.mcplugin.discordconnect.command;
 
 import net.md_5.bungee.api.CommandSender;
 
-public interface BungeeCommandBase {
+public interface BungeeCommandAction {
     /**
      * 実行する処理
      * @param sender 送信者

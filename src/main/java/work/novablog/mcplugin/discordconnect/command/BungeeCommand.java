@@ -5,7 +5,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 
-public class BungeeMinecraftCommand extends BungeeCommandExecutor {
+public class BungeeCommand extends BungeeCommandExecutor {
     private static final String NAME = DiscordConnect.getInstance().getDescription().getName();
     public static final String PERM = "discordconnect.command";
     private static final String ALIASES = "discon";
@@ -13,11 +13,11 @@ public class BungeeMinecraftCommand extends BungeeCommandExecutor {
     private static final String RELOAD_PERM = "reload";
     private static final String DEBUG_PERM = "debug";
 
-    public BungeeMinecraftCommand() {
+    public BungeeCommand() {
         super(NAME, PERM, ALIASES);
-        addSubCommand(new BungeeSubCommand("help", null, this::helpCmd).setDefault(true));
-        addSubCommand(new BungeeSubCommand("reload", RELOAD_PERM, this::reloadCmd));
-        addSubCommand(new BungeeSubCommand("debug", DEBUG_PERM, this::debugCmd));
+        addSubCommand(new BungeeSubCommandSettings("help", null, this::helpCmd).setDefault(true));
+        addSubCommand(new BungeeSubCommandSettings("reload", RELOAD_PERM, this::reloadCmd));
+        addSubCommand(new BungeeSubCommandSettings("debug", DEBUG_PERM, this::debugCmd));
     }
 
     public void helpCmd(CommandSender sender, String[] args) {
