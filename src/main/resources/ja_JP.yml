@@ -24,6 +24,17 @@ discordCommandDenied: ":warning: このコマンドを実行できるのは管�
 discordCommandNotFound: ":grey_question: コマンドが見つかりません！"
 discordCommandSyntaxError: ":exclamation: 引数が足りません！ヘルプを参照してください。"
 
+discordCommandHelp: "コマンド一覧"
+
+discordCommandPlayersListDescription: "プレイヤーの一覧を表示します"
+discordCommandPlayerList: "プレイヤー一覧"
+discordCommandPlayerCount: "参加中のプレイヤー : {count}/{max}人"
+discordCommandNoPlayersFound: "(プレイヤーがいません)"
+
+discordCommandReloadDescription: "configを再読込します（管理者専用）"
+discordCommandReload: "リロード"
+discordCommandReloading: "再起動しています...（再起動完了メッセージは表示されません）"
+
 userActivity: "ユーザーアクティビティ"
 serverActivity: "サーバーアクティビティ"
 command: "コマンド"

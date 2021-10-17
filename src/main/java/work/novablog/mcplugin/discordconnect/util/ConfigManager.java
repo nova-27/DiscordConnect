@@ -128,6 +128,17 @@ public class ConfigManager {
         discordCommandNotFound,
         discordCommandSyntaxError,
 
+        discordCommandHelp,
+
+        discordCommandPlayersListDescription,
+        discordCommandPlayerList,
+        discordCommandPlayerCount,
+        discordCommandNoPlayersFound,
+
+        discordCommandReloadDescription,
+        discordCommandReload,
+        discordCommandReloading,
+
         userActivity,
         serverActivity,
         command,

@@ -46,8 +46,9 @@ public class DiscordCommandExecutor {
      *     <ul>
      *         <li>{@link DiscordCommandAnnotation}アノテーションをつける</li>
      *         <li>割当済みのエイリアスは{@link DiscordCommandAnnotation#value()}に指定しない</li>
-     *         <li>第一引数は{@link Member}</li>
-     *         <li>第二引数は{@code String[]}</li>
+     *         <li>第一引数は{@link Member} 送信者</li>
+     *         <li>第二引数は{@link DiscordBotSender} 送信元チャンネルへの送信スレッド</li>
+     *         <li>第二引数は{@code String[]} 引数</li>
      *     </ul>
      * </p>
      * @param listener discordコマンドを処理するリスナー
@@ -59,11 +60,11 @@ public class DiscordCommandExecutor {
             if(discordCommandAnnotation == null) continue;
 
             Class<?>[] params = m.getParameterTypes();
-            if(params.length != 2) {
+            if(params.length != 3) {
                 //引数の数が一致しない
-                throw new IllegalArgumentException("handlers must receive 2 params.");
+                throw new IllegalArgumentException("handlers must receive 3 params.");
             }
-            if(!params[0].equals(Member.class) || !params[1].equals(String[].class)) {
+            if(!params[0].equals(Member.class) || !params[1].equals(DiscordBotSender.class) || !params[2].equals(String[].class)) {
                 //引数の型が不正
                 throw new IllegalArgumentException("the param type is incorrect.");
             }
@@ -134,7 +135,7 @@ public class DiscordCommandExecutor {
             return;
         }
 
-        targetSubCommand.get().execute(sender, args);
+        targetSubCommand.get().execute(sender, channel, args);
     }
 
     public static class DiscordCommandSettings {
@@ -175,11 +176,12 @@ public class DiscordCommandExecutor {
         /**
          * アクションを呼び出します
          * @param member 実行した人
+         * @param channel 送信元チャンネル
          * @param args 引数
          */
-        public void execute(@NotNull Member member, @NotNull String[] args) {
+        public void execute(@NotNull Member member, @NotNull DiscordBotSender channel, @NotNull String[] args) {
             try {
-                action.invoke(instance, member, args);
+                action.invoke(instance, member, channel, args);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }

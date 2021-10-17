@@ -10,6 +10,7 @@ import org.bstats.bungeecord.Metrics;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.command.BungeeCommand;
 import work.novablog.mcplugin.discordconnect.command.DiscordCommandExecutor;
+import work.novablog.mcplugin.discordconnect.command.DiscordStandardCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
@@ -111,6 +112,7 @@ public final class DiscordConnect extends Plugin {
         //コマンドの追加
         getProxy().getPluginManager().registerCommand(this, new BungeeCommand());
         discordCommandExecutor = new DiscordCommandExecutor();
+        discordCommandExecutor.registerCommand(new DiscordStandardCommand());
 
         init();
     }
