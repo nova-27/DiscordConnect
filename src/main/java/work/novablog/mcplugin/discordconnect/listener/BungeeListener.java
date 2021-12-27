@@ -1,6 +1,6 @@
 package work.novablog.mcplugin.discordconnect.listener;
 
-import com.github.ucchyocean.lc3.LunaChatAPI;
+import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.gmail.necnionch.myapp.markdownconverter.MarkComponent;
 import com.gmail.necnionch.myapp.markdownconverter.MarkdownConverter;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
@@ -36,8 +36,8 @@ public class BungeeListener implements Listener {
         if(event.isCommand() || event.isCancelled() || !(event.getSender() instanceof ProxiedPlayer)) return;
 
         N8ChatCasterAPI chatCasterApi = DiscordConnect.getInstance().getChatCasterAPI();
-        LunaChatAPI lunaChatAPI = DiscordConnect.getInstance().getLunaChatAPI();
-        if ((chatCasterApi == null || !chatCasterApi.isEnabledChatCaster()) && lunaChatAPI == null) {
+        LunaChatBungee lunaChat = DiscordConnect.getInstance().getLunaChat();
+        if ((chatCasterApi == null || !chatCasterApi.isEnabledChatCaster()) && lunaChat == null) {
             // 連携プラグインが無効の場合
             ProxiedPlayer sender = (ProxiedPlayer)event.getSender();
             String senderServer = sender.getServer().getInfo().getName();

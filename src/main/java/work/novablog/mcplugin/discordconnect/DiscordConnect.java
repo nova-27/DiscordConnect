@@ -1,6 +1,5 @@
 package work.novablog.mcplugin.discordconnect;
 
-import com.github.ucchyocean.lc3.LunaChatAPI;
 import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
@@ -38,7 +37,7 @@ public final class DiscordConnect extends Plugin {
     private N8ChatCasterAPI chatCasterAPI;
     private ChatCasterListener chatCasterListener;
 
-    private LunaChatAPI lunaChatAPI;
+    private LunaChatBungee lunaChat;
     private LunaChatListener lunaChatListener;
 
     /**
@@ -90,11 +89,11 @@ public final class DiscordConnect extends Plugin {
     }
 
     /**
-     * LunaChatAPIを返す
-     * @return lunaChatAPI
+     * LunaChatを返す
+     * @return lunaChat
      */
-    public LunaChatAPI getLunaChatAPI() {
-        return lunaChatAPI;
+    public LunaChatBungee getLunaChat() {
+        return lunaChat;
     }
 
     /**
@@ -122,7 +121,7 @@ public final class DiscordConnect extends Plugin {
         //LunaChatと連携
         temp = getProxy().getPluginManager().getPlugin("LunaChat");
         if(temp instanceof LunaChatBungee) {
-            lunaChatAPI = ((LunaChatBungee) temp).getLunaChatAPI();
+            lunaChat = (LunaChatBungee) temp;
             lunaChatListener = new LunaChatListener();
         }
 
