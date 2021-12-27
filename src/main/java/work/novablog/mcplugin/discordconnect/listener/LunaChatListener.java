@@ -1,7 +1,8 @@
 package work.novablog.mcplugin.discordconnect.listener;
 
+import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeeChannelChatEvent;
-import com.github.ucchyocean.lc3.bungee.event.LunaChatBungeePostJapanizeEvent;
+import com.github.ucchyocean.lc3.japanize.JapanizeType;
 import com.gmail.necnionch.myapp.markdownconverter.MarkComponent;
 import com.gmail.necnionch.myapp.markdownconverter.MarkdownConverter;
 import net.md_5.bungee.api.plugin.Listener;
@@ -18,28 +19,6 @@ public class LunaChatListener implements Listener {
     public void setJapanizeFormat(String japanizeFormat) {this.japanizeFormat = japanizeFormat;}
 
     /**
-     * LunaChatのチャンネルにJapanizeメッセージが送信されたら実行
-     * @param event チャット情報
-     */
-    @EventHandler
-    public void onJapanizeChat(LunaChatBungeePostJapanizeEvent event) {
-        if(!event.getChannel().isGlobalChannel()) return;
-
-        MarkComponent[] JPcomponents = MarkdownConverter.fromMinecraftMessage(event.getJapanized(), '&');
-        String JPconvertedMessage = MarkdownConverter.toDiscordMessage(JPcomponents);
-
-        MarkComponent[] ORcomponents = MarkdownConverter.fromMinecraftMessage(event.getOriginal(), '&');
-        String ORconvertedMessage = MarkdownConverter.toDiscordMessage(ORcomponents);
-
-        DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
-                japanizeFormat.replace("{server}", event.getMember().getServerName())
-                        .replace("{sender}", event.getMember().getDisplayName())
-                        .replace("{japanized}", JPconvertedMessage)
-                        .replace("{original}", ORconvertedMessage)
-        );
-    }
-
-    /**
      * LunaChatのチャンネルにメッセージが送信されたら実行
      * @param event チャット情報
      */
@@ -47,12 +26,31 @@ public class LunaChatListener implements Listener {
     public void onChat(LunaChatBungeeChannelChatEvent event) {
         if(!event.getChannel().isGlobalChannel()) return;
 
+        LunaChatBungee lunaChat = DiscordConnect.getInstance().getLunaChat();
+        boolean japanese = true;
+
+        String marker = lunaChat.getConfig().getNoneJapanizeMarker();
+        if (!marker.isEmpty() && event.getPreReplaceMessage().startsWith(marker)) {
+            japanese = false;
+        }
+
+        if (!lunaChat.getLunaChatAPI().isPlayerJapanize(event.getMember().getName())) {
+            japanese = false;
+        }
+
+        String message;
+        if(japanese) {
+            String jp = lunaChat.getLunaChatAPI().japanize(event.getNgMaskedMessage(), JapanizeType.GOOGLE_IME);
+            MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(jp, '&');
+            message = japanizeFormat.replace("{japanized}", MarkdownConverter.toDiscordMessage(components));
+        }else{
+            message = toDiscordFormat;
+        }
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getNgMaskedMessage(), '&');
-        String convertedMessage = MarkdownConverter.toDiscordMessage(components);
         DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
-                toDiscordFormat.replace("{server}", event.getMember().getServerName())
+                message.replace("{server}", event.getMember().getServerName())
                         .replace("{sender}", event.getMember().getDisplayName())
-                        .replace("{message}", convertedMessage)
+                        .replace("{original}", MarkdownConverter.toDiscordMessage(components))
         );
     }
 }
