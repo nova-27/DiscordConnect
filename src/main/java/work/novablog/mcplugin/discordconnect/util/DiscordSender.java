@@ -61,7 +61,7 @@ public class DiscordSender extends Thread{
 
             //キューを読む（埋め込み）
             while (!queue.isEmpty() && queue.peek() instanceof MessageEmbed) {
-                channel.sendMessage((MessageEmbed) queue.poll()).complete();
+                channel.sendMessageEmbeds((MessageEmbed) queue.poll()).complete();
             }
 
             try {
