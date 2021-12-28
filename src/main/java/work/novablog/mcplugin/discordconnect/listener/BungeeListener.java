@@ -48,7 +48,7 @@ public class BungeeListener implements Listener {
             DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
                     toDiscordFormat.replace("{server}", senderServer)
                             .replace("{sender}", sender.getName())
-                            .replace("{message}", convertedMessage)
+                            .replace("{original}", convertedMessage)
             );
         }
     }
