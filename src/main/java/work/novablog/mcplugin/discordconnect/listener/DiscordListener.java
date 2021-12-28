@@ -35,16 +35,29 @@ public class DiscordListener extends ListenerAdapter {
             }
 
             //DiscordConnect.getInstance().embed(Color.RED, "coming soon...", null);
-        }else {
+        } else {
             //メッセージ
-            MarkComponent[] components = MarkdownConverter.fromDiscordMessage(message.getMessage().getContentRaw());
-            TextComponent[] convertedMessage = MarkdownConverter.toMinecraftMessage(components);
+            if(!message.getMessage().getContentRaw().equals("")) {
+                MarkComponent[] components = MarkdownConverter.fromDiscordMessage(message.getMessage().getContentRaw());
+                TextComponent[] convertedMessage = MarkdownConverter.toMinecraftMessage(components);
 
-            TextComponent[] send = new TextComponent[convertedMessage.length + 1];
-            send[0] = new TextComponent(toMinecraftFormat.replace("{name}", message.getAuthor().getName()).replace("{channel_name}", message.getChannel().getName()));
-            System.arraycopy(convertedMessage, 0, send, 1, convertedMessage.length);
+                TextComponent[] send = new TextComponent[convertedMessage.length + 1];
+                send[0] = new TextComponent(toMinecraftFormat.replace("{name}", message.getAuthor().getName()).replace("{channel_name}", message.getChannel().getName()));
+                System.arraycopy(convertedMessage, 0, send, 1, convertedMessage.length);
 
-            ProxyServer.getInstance().broadcast(send);
+                ProxyServer.getInstance().broadcast(send);
+            }
+
+            message.getMessage().getAttachments().forEach((attachment) -> {
+                ProxyServer.getInstance().broadcast(
+                        new TextComponent(
+                                toMinecraftFormat
+                                        .replace("{name}", message.getAuthor().getName())
+                                        .replace("{channel_name}", message.getChannel().getName()) +
+                                        attachment.getUrl()
+                        )
+                );
+            });
         }
     }
 }
