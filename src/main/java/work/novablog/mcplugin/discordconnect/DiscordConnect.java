@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 public final class DiscordConnect extends Plugin {
-    private static final int CONFIG_LATEST = 3;
+    private static final int CONFIG_LATEST = 4;
     private static final String pluginDownloadLink = "https://github.com/nova-27/DiscordConnect/releases";
 
     private static DiscordConnect instance;
