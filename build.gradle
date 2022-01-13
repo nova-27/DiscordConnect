@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 repositories {
@@ -15,17 +15,17 @@ repositories {
 }
 
 dependencies {
-    compileOnly('net.md-5:bungeecord-api:1.18-R0.1-SNAPSHOT')
-    implementation("net.dv8tion:JDA:5.0.0-alpha.3") {
+    compileOnly 'net.md-5:bungeecord-api:1.18-R0.1-SNAPSHOT'
+    implementation("net.dv8tion:JDA:5.0.0-alpha.4") {
         exclude module: 'opus-java'
     }
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.1'
-    implementation('org.bstats:bstats-bungeecord:2.2.1')
-    implementation(files('libs/MarkdownConverter-1.1-SNAPSHOT-min.jar'))
-    compileOnly(files('libs/N8ChatCaster-dummy.jar'))
-    compileOnly(files('libs/LunaChat.jar'))
+    implementation 'org.bstats:bstats-bungeecord:2.2.1'
+    implementation files('libs/MarkdownConverter-1.1-SNAPSHOT-min.jar')
+    compileOnly files('libs/N8ChatCaster-dummy.jar')
+    compileOnly files('libs/LunaChat.jar')
 }
 
 processResources {
