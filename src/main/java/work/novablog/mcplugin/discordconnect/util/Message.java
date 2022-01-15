@@ -43,6 +43,6 @@ public enum Message {
      */
     @Override
     public String toString() {
-        return DiscordConnect.getInstance().getLangData().getProperty(name());
+        return DiscordConnect.getInstance().getLangData().getString(name());
     }
 }

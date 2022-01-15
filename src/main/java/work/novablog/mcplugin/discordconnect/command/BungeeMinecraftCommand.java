@@ -5,6 +5,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.util.Message;
 
+import java.io.IOException;
+
 /**
  * BungeeCordコマンド
  */
@@ -31,7 +33,11 @@ public class BungeeMinecraftCommand extends BungeeCommandExecutor {
     }
 
     public void reloadCmd(CommandSender sender, String[] args) {
-        DiscordConnect.getInstance().loadConfig();
+        try {
+            DiscordConnect.getInstance().loadConfig();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         sender.sendMessage(new TextComponent(Message.configReloaded.toString()));
     }
 }
