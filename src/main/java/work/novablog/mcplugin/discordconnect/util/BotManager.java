@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
+import work.novablog.mcplugin.discordconnect.command.DiscordCommandExecutor;
+import work.novablog.mcplugin.discordconnect.command.DiscordStandardCommands;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
@@ -43,6 +45,9 @@ public class BotManager implements EventListener {
                     .setAutoReconnect(true)
                     .build();
             bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
+            DiscordCommandExecutor discordCommandExecutor = new DiscordCommandExecutor(bot.updateCommands());
+            discordCommandExecutor.registerCommand(new DiscordStandardCommands());
+            bot.addEventListener(discordCommandExecutor);
         } catch (LoginException e) {
             DiscordConnect.getInstance().getLogger().severe(Message.invalidToken.toString());
             bot = null;
