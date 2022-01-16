@@ -201,7 +201,8 @@ public final class DiscordConnect extends Plugin {
         String token = pluginConfiguration.getString("token");
         List<Long> chatChannelIds = pluginConfiguration.getLongList("chatChannelIDs");
         String playingGameName = pluginConfiguration.getString("playingGameName");
-        String prefix = pluginConfiguration.getString("prefix");
+        String globalCmdAlias = pluginConfiguration.getString("globalCmdAlias");
+        String adminRole = pluginConfiguration.getString("adminRole");
         String toMinecraftFormat = pluginConfiguration.getString("toMinecraftFormat");
         String toDiscordFormat = pluginConfiguration.getString("toDiscordFormat");
         String japanizeFormat = pluginConfiguration.getString("japanizeFormat");
@@ -210,7 +211,7 @@ public final class DiscordConnect extends Plugin {
             lunaChatListener.setToDiscordFormat(toDiscordFormat);
             lunaChatListener.setJapanizeFormat(japanizeFormat);
         }
-        botManager = new BotManager(token, chatChannelIds, playingGameName, prefix, toMinecraftFormat);
+        botManager = new BotManager(token, chatChannelIds, playingGameName, globalCmdAlias, toMinecraftFormat, adminRole);
 
         // アップデートチェック
         boolean updateCheck = pluginConfiguration.getBoolean("updateCheck");

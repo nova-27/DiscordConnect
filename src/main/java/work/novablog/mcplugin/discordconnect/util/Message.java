@@ -30,15 +30,20 @@ public enum Message {
 
     userActivity,
     serverActivity,
+    command,
 
     proxyStarted,
     proxyStopped,
     joined,
     left,
-    serverSwitched;
+    serverSwitched,
+
+    discordCommandDenied,
+    discordOnlyFromDM,
+    discordOnlyFromGuild;
 
     /**
-     * propertiesファイルからメッセージを取ってくる
+     * yamlファイルからメッセージを取ってくる
      * @return メッセージ
      */
     @Override

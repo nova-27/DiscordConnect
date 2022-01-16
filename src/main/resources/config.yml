@@ -3,7 +3,8 @@ chatChannelIDs:
 - 000000000000000000
 playingGameName: サーバー稼働中！（{players}/{max}人）
 
-prefix: "!"
+globalCmdAlias: "discon"
+adminRole: "admin"
 toMinecraftFormat: "§9[Discord§7({channel_name})§9] §f<{name}>"
 toDiscordFormat: "*({server})* **{sender}** : {original}"
 updateCheck: true

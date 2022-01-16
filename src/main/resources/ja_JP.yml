@@ -22,6 +22,7 @@ bungeeCommandHelpReloadcmd: "§f/discon reload ・・・ configを再読込し�
 
 userActivity: "ユーザーアクティビティ"
 serverActivity: "サーバーアクティビティ"
+command: "コマンド"
 
 proxyStarted: ":ballot_box_with_check: BungeeCordプロキシが開始しました！"
 proxyStopped: ":no_entry_sign: BungeeCordプロキシが停止しました！"
@@ -29,6 +30,10 @@ proxyStopped: ":no_entry_sign: BungeeCordプロキシが停止しました！"
 joined: ":tada: {name}がサーバーに参加しました"
 left: ":wave: {name}がサーバーから退出しました"
 serverSwitched: ":twisted_rightwards_arrows: {name}が{server}サーバーへ移動しました"
+
+discordCommandDenied: ":no_entry: このコマンドを実行できるのは管理者だけです！"
+discordOnlyFromDM: ":warning: このコマンドはDM専用です"
+discordOnlyFromGuild: ":warning: このコマンドはチャンネル専用です"
 
 # ServerEnabled = :white_check_mark: {server}サーバーが有効になりました
 # ServerDisabled = :white_check_mark: {server}サーバーが無効になりました

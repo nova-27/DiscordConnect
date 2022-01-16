@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface DiscordCommandAnnotation {
     String value();
     String description();
+    boolean onlyAdmin() default false;
+    DiscordCommandReceivePolicy receivePolicy() default DiscordCommandReceivePolicy.onlyFromGuild;
 }

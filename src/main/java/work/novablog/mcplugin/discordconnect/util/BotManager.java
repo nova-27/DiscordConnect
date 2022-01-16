@@ -1,6 +1,5 @@
 package work.novablog.mcplugin.discordconnect.util;
 
-import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -20,7 +19,6 @@ import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,15 +35,22 @@ public class BotManager implements EventListener {
     private boolean isActive;
     private static boolean isRestarting;
 
-    public BotManager(String token, List<Long> chatChannelIds, String playingGameName, String prefix, String toMinecraftFormat) {
+    public BotManager(
+            String token,
+            List<Long> chatChannelIds,
+            String playingGameName,
+            String globalCmdAlias,
+            String toMinecraftFormat,
+            String adminRole
+    ) {
         //ログインする
         try {
             bot = JDABuilder.createDefault(token)
                     .addEventListeners(this)
                     .setAutoReconnect(true)
                     .build();
-            bot.addEventListener(new DiscordListener(prefix, toMinecraftFormat));
-            DiscordCommandExecutor discordCommandExecutor = new DiscordCommandExecutor(bot.updateCommands());
+            bot.addEventListener(new DiscordListener(toMinecraftFormat));
+            DiscordCommandExecutor discordCommandExecutor = new DiscordCommandExecutor(globalCmdAlias, adminRole, bot);
             discordCommandExecutor.registerCommand(new DiscordStandardCommands());
             bot.addEventListener(discordCommandExecutor);
         } catch (LoginException e) {

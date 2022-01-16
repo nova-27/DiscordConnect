@@ -10,11 +10,13 @@ import java.util.regex.Pattern;
 
 public class DiscordSender extends Thread{
     private final TextChannel channel;
-    private final Queue<Object> queue = new ArrayDeque<>();
-    private boolean isStopped = false;
+    private final Queue<Object> queue;
+    private boolean isStopped;
 
     public DiscordSender(TextChannel channel) {
         this.channel = channel;
+        queue = new ArrayDeque<>();
+        isStopped = false;
     }
 
     /**
