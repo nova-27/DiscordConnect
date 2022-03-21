@@ -16,14 +16,19 @@ import work.novablog.mcplugin.discordconnect.util.Message;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class BungeeListener implements Listener {
     private static final String AVATAR_IMG_URL = "https://crafatar.com/avatars/{uuid}?size=512&default=MHF_Steve&overlay";
     private final String toDiscordFormat;
+    private final List<String> hiddenServers;
+    private final String dummyServerName;
 
-    public BungeeListener(String toDiscordFormat) {
+    public BungeeListener(String toDiscordFormat, List<String> hiddenServers, String dummyServerName) {
         this.toDiscordFormat = toDiscordFormat;
+        this.hiddenServers = hiddenServers;
+        this.dummyServerName = dummyServerName;
     }
 
     /**
@@ -41,6 +46,7 @@ public class BungeeListener implements Listener {
             // 連携プラグインが無効の場合
             ProxiedPlayer sender = (ProxiedPlayer)event.getSender();
             String senderServer = sender.getServer().getInfo().getName();
+            if(hiddenServers.contains(senderServer)) senderServer = dummyServerName;
             String message = event.getMessage();
 
             MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(message, '&');
@@ -107,6 +113,8 @@ public class BungeeListener implements Listener {
      */
     @EventHandler
     public void onSwitch(ServerSwitchEvent e) {
+        if(hiddenServers.contains(e.getPlayer().getServer().getInfo().getName())) return;
+
         DiscordConnect.getInstance().getBotManager().sendMessageToChatChannel(
                 Message.userActivity.toString(),
                 null,
