@@ -8,8 +8,11 @@ toMinecraftFormat: "§9[Discord§7({channel_name})§9] §f<{name}>"
 toDiscordFormat: "*({server})* **{sender}** : {original}"
 updateCheck: true
 
+hiddenServers:
+- test
+dummyServerName: "----"
 # LunaChat使用時にのみ有効 (Only when using the LunaChat plugin)
 japanizeFormat: "*({server})* **{sender}** : {original} ({japanized})"
 
 # この値は変更しないでください！ (Don't change the value!)
-configVersion: 4
+configVersion: 5
