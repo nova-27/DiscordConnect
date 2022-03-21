@@ -19,17 +19,24 @@ import work.novablog.mcplugin.discordconnect.util.discord.DiscordWebhookSender;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class BungeeListener implements Listener {
     private final String fromMinecraftToDiscordName;
+    private final List<String> hiddenServers;
+    private final String dummyServerName;
 
     /**
      * bungeecordのイベントを受け取るインスタンスを生成します
      * @param fromMinecraftToDiscordName マイクラからDiscordへ転送するときの名前欄のフォーマット
+     * @param hiddenServers
+     * @param dummyServerName
      */
-    public BungeeListener(@NotNull String fromMinecraftToDiscordName) {
+    public BungeeListener(@NotNull String fromMinecraftToDiscordName, List<String> hiddenServers, String dummyServerName) {
         this.fromMinecraftToDiscordName = fromMinecraftToDiscordName;
+        this.hiddenServers = hiddenServers;
+        this.dummyServerName = dummyServerName;
     }
 
     /**
@@ -45,10 +52,12 @@ public class BungeeListener implements Listener {
         LunaChatAPI lunaChatAPI = DiscordConnect.getInstance().getLunaChatAPI();
         if ((chatCasterApi == null || !chatCasterApi.isEnabledChatCaster()) && lunaChatAPI == null) {
             // 連携プラグインが無効の場合
+            String senderServer = ((ProxiedPlayer)event.getSender()).getServer().getInfo().getName();
+            if(hiddenServers.contains(senderServer)) senderServer = dummyServerName;
             String name = fromMinecraftToDiscordName
                     .replace("{name}", ((ProxiedPlayer) event.getSender()).getName())
                     .replace("{displayName}", ((ProxiedPlayer)event.getSender()).getDisplayName())
-                    .replace("{server}", ((ProxiedPlayer)event.getSender()).getServer().getInfo().getName());
+                    .replace("{server}", senderServer);
             String avatarURL = ConvertUtil.getMinecraftAvatarURL(((ProxiedPlayer) event.getSender()).getUniqueId());
 
             MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getMessage(), '&');
@@ -150,6 +159,8 @@ public class BungeeListener implements Listener {
      */
     @EventHandler
     public void onSwitch(ServerSwitchEvent e) {
+        if(hiddenServers.contains(e.getPlayer().getServer().getInfo().getName())) return;
+
         ArrayList<DiscordWebhookSender> discordWebhookSenders = DiscordConnect.getInstance().getDiscordWebhookSenders();
 
         String name = fromMinecraftToDiscordName

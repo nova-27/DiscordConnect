@@ -165,7 +165,7 @@ public final class DiscordConnect extends Plugin {
         }
 
         //BungeecordイベントのListenerを登録
-        bungeeListener = new BungeeListener(configManager.fromMinecraftToDiscordName);
+        bungeeListener = new BungeeListener(configManager.fromMinecraftToDiscordName, configManager.hiddenServers, configManager.dummyServerName);
         getProxy().getPluginManager().registerListener(this, bungeeListener);
         if(lunaChatAPI != null) {
             lunaChatListener = new LunaChatListener(

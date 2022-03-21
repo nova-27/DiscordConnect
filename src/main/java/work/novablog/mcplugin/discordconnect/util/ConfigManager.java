@@ -29,6 +29,8 @@ public class ConfigManager {
     public String fromMinecraftToDiscordName;
     public String fromDiscordToDiscordName;
 
+    public List<String> hiddenServers;
+    public String dummyServerName;
     public String lunaChatJapanizeFormat;
 
     /**
@@ -66,6 +68,8 @@ public class ConfigManager {
         fromMinecraftToDiscordName = pluginConfig.getString("fromMinecraftToDiscordName");
         fromDiscordToDiscordName = pluginConfig.getString("fromDiscordToDiscordName");
 
+        hiddenServers = pluginConfig.getStringList("hiddenServers");
+        dummyServerName = pluginConfig.getString("dummyServerName");
         lunaChatJapanizeFormat = pluginConfig.getString("japanizeFormat");
     }
 
