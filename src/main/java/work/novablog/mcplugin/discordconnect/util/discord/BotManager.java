@@ -36,7 +36,6 @@ public class BotManager implements EventListener {
     private final String playingGameName;
     private final Boolean enableConsoleChannel;
     private final @Nullable Long consoleChannelId;
-    private final @Nullable Boolean allowDispatchCommandFromConsoleChannel;
 
 
     private boolean isActive;
@@ -78,7 +77,6 @@ public class BotManager implements EventListener {
         this.playingGameName = playingGameName;
         this.enableConsoleChannel = enableConsoleChannel;
         this.consoleChannelId = consoleChannelId;
-        this.allowDispatchCommandFromConsoleChannel = allowDispatchCommandFromConsoleChannel;
         this.isActive = false;
     }
 
@@ -152,23 +150,12 @@ public class BotManager implements EventListener {
 
             // JDAAppenderを適用
             if(enableConsoleChannel) {
-                // 必要なプロパティが定義されていることをチェックする
+                // consoleChannelId が null でないことをチェックする
                 if(consoleChannelId == null) {
-                    // 定義されていない場合シャットダウンする
+                    // nullだった場合シャットダウンする
                     DiscordConnect.getInstance().getLogger().severe(
                             ConfigManager.Message.configPropertyIsNull.toString()
                                     .replace("{property}", "consoleChannel.consoleChannelId")
-                    );
-                    DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.shutdownDueToError.toString());
-                    bot.shutdownNow();
-                    return;
-                }
-
-                if(allowDispatchCommandFromConsoleChannel == null) {
-                    // 定義されていない場合シャットダウンする
-                    DiscordConnect.getInstance().getLogger().severe(
-                            ConfigManager.Message.configPropertyIsNull.toString()
-                                    .replace("{property}", "consoleChannel.allowDispatchCommand")
                     );
                     DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.shutdownDueToError.toString());
                     bot.shutdownNow();
