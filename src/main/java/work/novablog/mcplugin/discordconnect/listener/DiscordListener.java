@@ -73,20 +73,22 @@ public class DiscordListener extends ListenerAdapter {
             }
 
             discordCommandExecutor.parse(receivedMessage, alias, args);
-        } else if (consoleChannelId == receivedMessage.getChannel().getIdLong() && Boolean.TRUE.equals(allowDispatchCommandFromConsoleChannel)) {
-            String commandLine = receivedMessage.getMessage().getContentRaw();
+        } else if (consoleChannelId == receivedMessage.getChannel().getIdLong()) {
+            if(Boolean.TRUE.equals(allowDispatchCommandFromConsoleChannel)) {
+                String commandLine = receivedMessage.getMessage().getContentRaw();
 
-            DiscordConnect.getInstance().getProxy().getPluginManager().dispatchCommand(
-                    DiscordConnect.getInstance().getProxy().getConsole(),
-                    commandLine
-            );
+                DiscordConnect.getInstance().getProxy().getPluginManager().dispatchCommand(
+                        DiscordConnect.getInstance().getProxy().getConsole(),
+                        commandLine
+                );
 
-            // 誰が何を実行したか分かりづらいのログを出力する
-            DiscordConnect.getInstance().getLogger().info(
-                    ConfigManager.Message.dispatchedCommand.toString()
-                            .replace("{authorId}", receivedMessage.getAuthor().getId())
-                            .replace("{commandLine}", commandLine)
-            );
+                // 誰が何を実行したか分かりづらいのログを出力する
+                DiscordConnect.getInstance().getLogger().info(
+                        ConfigManager.Message.dispatchedCommand.toString()
+                                .replace("{authorId}", receivedMessage.getAuthor().getId())
+                                .replace("{commandLine}", commandLine)
+                );
+            }
         } else {
             String name = receivedMessage.getAuthor().getName();
             String nickname = Objects.requireNonNull(receivedMessage.getMember()).getNickname() == null ?
