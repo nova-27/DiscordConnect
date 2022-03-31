@@ -37,6 +37,8 @@ public class DiscordListener extends ListenerAdapter {
      * @param toMinecraftFormat        DiscordのメッセージをBungeecordへ転送するときのフォーマット
      * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
      * @param discordCommandExecutor   discordのコマンドの解析や実行を行うインスタンス
+     * @param consoleChannelId         コンソールチャンネルのID
+     * @param allowDispatchCommandFromConsoleChannel コンソールチャンネルからのコマンド実行を許可するか否か
      */
     public DiscordListener(
             @NotNull String prefix,

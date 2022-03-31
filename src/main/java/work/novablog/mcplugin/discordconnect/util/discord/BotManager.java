@@ -50,6 +50,9 @@ public class BotManager implements EventListener {
      * @param toMinecraftFormat DiscordのメッセージをBungeeCordに転送するときのフォーマット
      * @param fromDiscordToDiscordName Discordのメッセージを再送するときの名前欄のフォーマット
      * @param discordCommandExecutor discordのコマンドの解析や実行を行うインスタンス
+     * @param enableConsoleChannel コンソールチャンネルを有効化するか否か
+     * @param consoleChannelId (有効にする場合) コンソールチャンネルのID
+     * @param allowDispatchCommandFromConsoleChannel (有効にする場合) コンソールチャンネルからのコマンド実行を許可するか否か
      * @throws LoginException botのログインに失敗した場合
      */
     public BotManager(
