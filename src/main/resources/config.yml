@@ -5,6 +5,11 @@ chatChannelIDs:
 - 000000000000000000
 playingGameName: サーバー稼働中！（{players}/{max}人）
 
+consoleChannel:
+  enable: false
+  channelId: 000000000000000000
+  allowDispatchCommand: true
+
 prefix: "!"
 adminRole: ""
 updateCheck: true

@@ -1,5 +1,6 @@
 package work.novablog.mcplugin.discordconnect.util.discord;
 
+import me.scarsz.jdaappender.ChannelLoggingHandler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.command.DiscordCommandExecutor;
 import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
@@ -30,7 +32,12 @@ public class BotManager implements EventListener {
     private final JDA bot;
     private final List<Long> chatChannelIds;
     private List<DiscordBotSender> chatChannelSenders;
+    private ChannelLoggingHandler loggingHandler;
     private final String playingGameName;
+    private final Boolean enableConsoleChannel;
+    private final @Nullable Long consoleChannelId;
+    private final @Nullable Boolean allowDispatchCommandFromConsoleChannel;
+
 
     private boolean isActive;
     private static boolean isRestarting = false;
@@ -53,7 +60,10 @@ public class BotManager implements EventListener {
             @NotNull String prefix,
             @NotNull String toMinecraftFormat,
             @NotNull String fromDiscordToDiscordName,
-            @NotNull DiscordCommandExecutor discordCommandExecutor
+            @NotNull DiscordCommandExecutor discordCommandExecutor,
+            @NotNull Boolean enableConsoleChannel,
+            @Nullable Long consoleChannelId,
+            @Nullable Boolean allowDispatchCommandFromConsoleChannel
     ) throws LoginException {
         //ログインする
         bot = JDABuilder.create(token, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
@@ -61,11 +71,14 @@ public class BotManager implements EventListener {
                 .setAutoReconnect(true)
                 .build();
         bot.addEventListener(
-                new DiscordListener(prefix, toMinecraftFormat, fromDiscordToDiscordName, discordCommandExecutor)
+                new DiscordListener(prefix, toMinecraftFormat, fromDiscordToDiscordName, discordCommandExecutor, consoleChannelId, allowDispatchCommandFromConsoleChannel)
         );
 
         this.chatChannelIds = chatChannelIds;
         this.playingGameName = playingGameName;
+        this.enableConsoleChannel = enableConsoleChannel;
+        this.consoleChannelId = consoleChannelId;
+        this.allowDispatchCommandFromConsoleChannel = allowDispatchCommandFromConsoleChannel;
         this.isActive = false;
     }
 
@@ -110,6 +123,10 @@ public class BotManager implements EventListener {
             });
         }
 
+        if(loggingHandler != null) {
+            loggingHandler.shutdown();
+        }
+
         bot.shutdownNow();
     }
 
@@ -131,6 +148,49 @@ public class BotManager implements EventListener {
                 DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.shutdownDueToError.toString());
                 bot.shutdownNow();
                 return;
+            }
+
+            // JDAAppenderを適用
+            if(enableConsoleChannel) {
+                // 必要なプロパティが定義されていることをチェックする
+                if(consoleChannelId == null) {
+                    // 定義されていない場合シャットダウンする
+                    DiscordConnect.getInstance().getLogger().severe(
+                            ConfigManager.Message.configPropertyIsNull.toString()
+                                    .replace("{property}", "consoleChannel.consoleChannelId")
+                    );
+                    DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.shutdownDueToError.toString());
+                    bot.shutdownNow();
+                    return;
+                }
+
+                if(allowDispatchCommandFromConsoleChannel == null) {
+                    // 定義されていない場合シャットダウンする
+                    DiscordConnect.getInstance().getLogger().severe(
+                            ConfigManager.Message.configPropertyIsNull.toString()
+                                    .replace("{property}", "consoleChannel.allowDispatchCommand")
+                    );
+                    DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.shutdownDueToError.toString());
+                    bot.shutdownNow();
+                    return;
+                }
+
+                TextChannel consoleChannel = bot.getTextChannelById(consoleChannelId);
+
+                if(consoleChannel == null) {
+                    DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.consoleChannelNotFound.toString());
+                    DiscordConnect.getInstance().getLogger().severe(ConfigManager.Message.shutdownDueToError.toString());
+                    bot.shutdownNow();
+                    return;
+                }
+
+                loggingHandler = new ChannelLoggingHandler(() -> consoleChannel, config -> {
+                    config.setUseCodeBlocks(true);
+                    config.setSplitCodeBlockForLinks(false);
+                    config.setAllowLinkEmbeds(true);
+                    config.setColored(true);
+                    config.setTruncateLongItems(true);
+                }).attachLog4jLogging().schedule();
             }
 
             chatChannelSenders.forEach(Thread::start);
