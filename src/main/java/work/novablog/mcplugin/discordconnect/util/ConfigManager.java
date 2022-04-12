@@ -21,6 +21,10 @@ public class ConfigManager {
     public List<Long> botChatChannelIds;
     public String botPlayingGameName;
 
+    public Boolean isEnableConsoleChannel;
+    public Long consoleChannelId;
+    public Boolean allowDispatchCommandFromConsoleChannel;
+
     public String botCommandPrefix;
     public String adminRole;
     public boolean doUpdateCheck;
@@ -59,6 +63,10 @@ public class ConfigManager {
         botWebhookURLs = pluginConfig.getStringList("webhookURLs");
         botChatChannelIds = pluginConfig.getLongList("chatChannelIDs");
         botPlayingGameName = pluginConfig.getString("playingGameName");
+
+        isEnableConsoleChannel = pluginConfig.getBoolean("consoleChannel.enable");
+        consoleChannelId = pluginConfig.getLong("consoleChannel.channelId");
+        allowDispatchCommandFromConsoleChannel = pluginConfig.getBoolean("consoleChannel.allowDispatchCommand");
 
         botCommandPrefix = pluginConfig.getString("prefix");
         adminRole = pluginConfig.getString("adminRole");
@@ -109,11 +117,14 @@ public class ConfigManager {
         invalidToken,
         invalidWebhookURL,
         mainChannelNotFound,
+        consoleChannelNotFound,
         shutdownDueToError,
         normalShutdown,
         botIsReady,
         botRestarted,
         configReloaded,
+        configPropertyIsNull,
+        dispatchedCommand,
 
         updateNotice,
         updateDownloadLink,
