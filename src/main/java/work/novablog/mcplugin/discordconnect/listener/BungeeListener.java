@@ -6,7 +6,9 @@ import com.github.ucchyocean.lc3.LunaChatAPI;
 import com.gmail.necnionch.myapp.markdownconverter.MarkComponent;
 import com.gmail.necnionch.myapp.markdownconverter.MarkdownConverter;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -20,6 +22,7 @@ import work.novablog.mcplugin.discordconnect.util.discord.DiscordWebhookSender;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class BungeeListener implements Listener {
@@ -123,7 +126,11 @@ public class BungeeListener implements Listener {
         String name = fromMinecraftToDiscordName
                 .replace("{name}", e.getPlayer().getName())
                 .replace("{displayName}", e.getPlayer().getDisplayName())
-                .replace("{server}", e.getPlayer().getServer().getInfo().getName());
+                .replace("{server}", Optional.ofNullable(e.getPlayer().getServer())
+                        .map(Server::getInfo)
+                        .map(ServerInfo::getName)
+                        .orElse("unknown"));
+
         String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
 
         WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
