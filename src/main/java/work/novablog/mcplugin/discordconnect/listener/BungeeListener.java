@@ -13,6 +13,7 @@ import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import work.novablog.mcplugin.discordconnect.DiscordConnect;
 import work.novablog.mcplugin.discordconnect.util.ConfigManager;
 import work.novablog.mcplugin.discordconnect.util.ConvertUtil;
@@ -55,12 +56,11 @@ public class BungeeListener implements Listener {
         LunaChatAPI lunaChatAPI = DiscordConnect.getInstance().getLunaChatAPI();
         if ((chatCasterApi == null || !chatCasterApi.isEnabledChatCaster()) && lunaChatAPI == null) {
             // 連携プラグインが無効の場合
-            String senderServer = ((ProxiedPlayer)event.getSender()).getServer().getInfo().getName();
-            if(hiddenServers.contains(senderServer)) senderServer = dummyServerName;
             String name = fromMinecraftToDiscordName
                     .replace("{name}", ((ProxiedPlayer) event.getSender()).getName())
                     .replace("{displayName}", ((ProxiedPlayer)event.getSender()).getDisplayName())
-                    .replace("{server}", senderServer);
+                    .replace("{server}", replaceServerDisplayName(((ProxiedPlayer)event.getSender()).getServer()).orElse("unknown"));
+
             String avatarURL = ConvertUtil.getMinecraftAvatarURL(((ProxiedPlayer) event.getSender()).getUniqueId());
 
             MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getMessage(), '&');
@@ -126,10 +126,7 @@ public class BungeeListener implements Listener {
         String name = fromMinecraftToDiscordName
                 .replace("{name}", e.getPlayer().getName())
                 .replace("{displayName}", e.getPlayer().getDisplayName())
-                .replace("{server}", Optional.ofNullable(e.getPlayer().getServer())
-                        .map(Server::getInfo)
-                        .map(ServerInfo::getName)
-                        .orElse("unknown"));
+                .replace("{server}", replaceServerDisplayName(e.getPlayer().getServer()).orElse("unknown"));
 
         String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
 
@@ -173,7 +170,8 @@ public class BungeeListener implements Listener {
         String name = fromMinecraftToDiscordName
                 .replace("{name}", e.getPlayer().getName())
                 .replace("{displayName}", e.getPlayer().getDisplayName())
-                .replace("{server}", e.getPlayer().getServer().getInfo().getName());
+                .replace("{server}", replaceServerDisplayName(e.getPlayer().getServer()).orElse("unknown"));
+
         String avatarURL = ConvertUtil.getMinecraftAvatarURL(e.getPlayer().getUniqueId());
 
         WebhookEmbedBuilder webhookEmbedBuilder = new WebhookEmbedBuilder();
@@ -190,7 +188,7 @@ public class BungeeListener implements Listener {
         webhookEmbedBuilder.setDescription(
                 ConfigManager.Message.serverSwitched.toString()
                         .replace("{name}", e.getPlayer().getName())
-                        .replace("{server}", e.getPlayer().getServer().getInfo().getName())
+                        .replace("{server}", replaceServerDisplayName(e.getPlayer().getServer()).orElse("unknown"))
         );
 
         discordWebhookSenders.forEach(sender -> sender.sendMessage(
@@ -210,5 +208,17 @@ public class BungeeListener implements Listener {
                         DiscordConnect.getInstance().getProxy().getPlayers().size(),
                         DiscordConnect.getInstance().getProxy().getConfig().getPlayerLimit()
         ),1L, TimeUnit.SECONDS);
+    }
+
+    /**
+     * サーバーの表示名を返します
+     * @param server 対象のサーバー
+     * @return サーバーの表示名。無ければ {@link Optional#empty()} を返します。
+     */
+    private Optional<String> replaceServerDisplayName(@Nullable Server server) {
+        return Optional.ofNullable(server)
+                .map(Server::getInfo)
+                .map(ServerInfo::getName)
+                .map(name -> hiddenServers.contains(name) ? dummyServerName : name);
     }
 }
