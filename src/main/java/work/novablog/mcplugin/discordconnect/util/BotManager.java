@@ -39,6 +39,7 @@ public class BotManager implements EventListener {
             @NotNull Logger logger,
             @NotNull String token,
             @NotNull List<Long> chatChannelIds,
+            @NotNull List<Long> consoleChannelIds,
             @NotNull String playingGameName,
             @NotNull String toMinecraftFormat
     ) {
@@ -59,7 +60,9 @@ public class BotManager implements EventListener {
         this.channelIds = new HashMap<>();
         this.channelIds.put(ChannelType.CHAT, chatChannelIds);
         this.channelSenders = new HashMap<>();
+        this.channelIds.put(ChannelType.CONSOLE, consoleChannelIds);
         this.channelSenders.put(ChannelType.CHAT, new ArrayList<>());
+        this.channelSenders.put(ChannelType.CONSOLE, new ArrayList<>());
         this.playingGameName = playingGameName;
     }
 
@@ -74,7 +77,7 @@ public class BotManager implements EventListener {
 
         //プロキシ停止メッセージ
         sendMessageToChannel(
-                ChannelType.CHAT,
+                ChannelType.ALL,
                 Message.serverActivity.toString(),
                 null,
                 Message.proxyStopped.toString(),
@@ -138,10 +141,8 @@ public class BotManager implements EventListener {
                     ProxyServer.getInstance().getConfig().getPlayerLimit()
             );
 
-            logger.info(Message.botIsReady.toString());
-
             sendMessageToChannel(
-                    ChannelType.CHAT,
+                    ChannelType.ALL,
                     Message.serverActivity.toString(),
                     null,
                     Message.proxyStarted.toString(),
@@ -155,6 +156,8 @@ public class BotManager implements EventListener {
                     null,
                     null
             );
+
+            logger.info(Message.botIsReady.toString());
         }
     }
 
@@ -165,7 +168,11 @@ public class BotManager implements EventListener {
      * @param mes         メッセージ
      */
     public void sendMessageToChannel(@NotNull ChannelType channelType, @NotNull String mes) {
-        channelSenders.getOrDefault(channelType, new ArrayList<>()).forEach(sender -> sender.addQueue(mes));
+        if (channelType == ChannelType.ALL) {
+            channelSenders.values().forEach(senders -> senders.forEach(sender -> sender.addQueue(mes)));
+        } else {
+            channelSenders.getOrDefault(channelType, new ArrayList<>()).forEach(sender -> sender.addQueue(mes));
+        }
     }
 
     /**
@@ -211,7 +218,11 @@ public class BotManager implements EventListener {
         eb.setImage(image);
         eb.setThumbnail(thumbnail);
 
-        channelSenders.getOrDefault(channelType, new ArrayList<>()).forEach(sender -> sender.addQueue(eb.build()));
+        if (channelType == ChannelType.ALL) {
+            channelSenders.values().forEach(senders -> senders.forEach(sender -> sender.addQueue(eb.build())));
+        } else {
+            channelSenders.getOrDefault(channelType, new ArrayList<>()).forEach(sender -> sender.addQueue(eb.build()));
+        }
     }
 
     /**
@@ -232,6 +243,6 @@ public class BotManager implements EventListener {
     }
 
     public enum ChannelType {
-        CHAT
+        CHAT, CONSOLE, ALL
     }
 }
