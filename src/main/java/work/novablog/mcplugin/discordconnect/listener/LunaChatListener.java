@@ -32,7 +32,8 @@ public class LunaChatListener implements Listener {
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(event.getMessage(), '§');
         String convertedMessage = MarkdownConverter.toDiscordMessage(components);
 
-        botManager.sendMessageToChatChannel(
+        botManager.sendMessageToChannel(
+                BotManager.ChannelType.CHAT,
                 toDiscordFormat.replace("{server}", event.getMember().getServerName())
                         .replace("{sender}", event.getMember().getDisplayName())
                         .replace("{message}", convertedMessage)

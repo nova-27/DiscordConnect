@@ -67,7 +67,8 @@ public final class DiscordConnect extends Plugin {
      * configを読み直してbotを再起動する
      */
     public void reload() {
-        botManager.sendMessageToChatChannel(
+        botManager.sendMessageToChannel(
+                BotManager.ChannelType.CHAT,
                 Message.serverActivity.toString(),
                 null,
                 Message.botRestarting.toString(),

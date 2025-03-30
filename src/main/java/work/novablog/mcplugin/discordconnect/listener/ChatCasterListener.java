@@ -37,6 +37,6 @@ public class ChatCasterListener implements Listener {
         String message = api.formatMessageForDiscord(event);
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(message, '&');
         String output = MarkdownConverter.toDiscordMessage(components);
-        botManager.sendMessageToChatChannel(output);
+        botManager.sendMessageToChannel(BotManager.ChannelType.CHAT, output);
     }
 }

@@ -18,6 +18,7 @@ import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,8 +29,8 @@ import java.util.logging.Logger;
 public class BotManager implements EventListener {
     private final Logger logger;
     private JDA bot;
-    private final List<Long> chatChannelIds;
-    private final List<DiscordSender> chatChannelSenders;
+    private final HashMap<ChannelType, List<Long>> channelIds;
+    private final HashMap<ChannelType, List<DiscordSender>> channelSenders;
     private final String playingGameName;
 
     private boolean isActive;
@@ -55,8 +56,10 @@ public class BotManager implements EventListener {
             isActive = false;
         }
 
-        this.chatChannelIds = chatChannelIds;
-        this.chatChannelSenders = new ArrayList<>();
+        this.channelIds = new HashMap<>();
+        this.channelIds.put(ChannelType.CHAT, chatChannelIds);
+        this.channelSenders = new HashMap<>();
+        this.channelSenders.put(ChannelType.CHAT, new ArrayList<>());
         this.playingGameName = playingGameName;
     }
 
@@ -70,7 +73,8 @@ public class BotManager implements EventListener {
         logger.info(Message.normalShutdown.toString());
 
         //プロキシ停止メッセージ
-        sendMessageToChatChannel(
+        sendMessageToChannel(
+                ChannelType.CHAT,
                 Message.serverActivity.toString(),
                 null,
                 Message.proxyStopped.toString(),
@@ -86,20 +90,22 @@ public class BotManager implements EventListener {
         );
 
         //送信完了まで待機
-        chatChannelSenders.forEach(DiscordSender::interrupt);
-        chatChannelSenders.forEach(sender -> {
-            try {
-                sender.join();
-            } catch (InterruptedException e) {
-                logger.log(Level.SEVERE, "Exception", e);
-            }
-        });
+        for (List<DiscordSender> senders : channelSenders.values()) {
+            senders.forEach(DiscordSender::interrupt);
+            senders.forEach(sender -> {
+                try {
+                    sender.join();
+                } catch (InterruptedException e) {
+                    logger.log(Level.SEVERE, "Exception", e);
+                }
+            });
+        }
 
         //botのシャットダウン
         bot.shutdown();
 
         bot = null;
-        chatChannelSenders.clear();
+        channelSenders.clear();
         isActive = false;
     }
 
@@ -108,18 +114,23 @@ public class BotManager implements EventListener {
         if (event instanceof ReadyEvent) {
             //Botのログインが完了
 
-            //チャットチャンネルを登録
-            for (long id : chatChannelIds) {
-                TextChannel channel = bot.getTextChannelById(id);
+            //channelSendersの設定
+            for (ChannelType type : channelIds.keySet()) {
+                List<Long> channelIds = this.channelIds.get(type);
+                List<DiscordSender> senders = channelSenders.get(type);
 
-                if (channel == null) {
-                    logger.warning(Message.channelNotFound.toString().replace("{id}", String.valueOf(id)));
-                    continue;
+                for (long channelId : channelIds) {
+                    TextChannel channel = bot.getTextChannelById(channelId);
+
+                    if (channel == null) {
+                        logger.warning(Message.channelNotFound.toString().replace("{id}", String.valueOf(channelId)));
+                        continue;
+                    }
+
+                    DiscordSender sender = new DiscordSender(channel);
+                    sender.start();
+                    senders.add(sender);
                 }
-
-                DiscordSender sender = new DiscordSender(channel);
-                sender.start();
-                chatChannelSenders.add(sender);
             }
 
             updateGameName(
@@ -129,7 +140,8 @@ public class BotManager implements EventListener {
 
             logger.info(Message.botIsReady.toString());
 
-            sendMessageToChatChannel(
+            sendMessageToChannel(
+                    ChannelType.CHAT,
                     Message.serverActivity.toString(),
                     null,
                     Message.proxyStarted.toString(),
@@ -147,17 +159,19 @@ public class BotManager implements EventListener {
     }
 
     /**
-     * チャットチャンネルへメッセージを送信
+     * テキストチャンネルへメッセージを送信
      *
-     * @param mes メッセージ
+     * @param channelType チャンネルの種類
+     * @param mes         メッセージ
      */
-    public void sendMessageToChatChannel(@NotNull String mes) {
-        chatChannelSenders.forEach(sender -> sender.addQueue(mes));
+    public void sendMessageToChannel(@NotNull ChannelType channelType, @NotNull String mes) {
+        channelSenders.getOrDefault(channelType, new ArrayList<>()).forEach(sender -> sender.addQueue(mes));
     }
 
     /**
-     * チャットチャンネルへ埋め込みメッセージを送信
+     * テキストチャンネルへ埋め込みメッセージを送信
      *
+     * @param channelType チャンネルの種類
      * @param title       タイトル
      * @param titleUrl    タイトルのリンクURL
      * @param desc        説明
@@ -171,7 +185,8 @@ public class BotManager implements EventListener {
      * @param image       画像
      * @param thumbnail   サムネイル
      */
-    public void sendMessageToChatChannel(
+    public void sendMessageToChannel(
+            @NotNull ChannelType channelType,
             @Nullable String title,
             @Nullable String titleUrl,
             @Nullable String desc,
@@ -196,7 +211,7 @@ public class BotManager implements EventListener {
         eb.setImage(image);
         eb.setThumbnail(thumbnail);
 
-        chatChannelSenders.forEach(sender -> sender.addQueue(eb.build()));
+        channelSenders.getOrDefault(channelType, new ArrayList<>()).forEach(sender -> sender.addQueue(eb.build()));
     }
 
     /**
@@ -214,5 +229,9 @@ public class BotManager implements EventListener {
                 Activity.playing(playingGameName
                         .replace("{players}", String.valueOf(playerCount))
                         .replace("{max}", maxPlayersString)));
+    }
+
+    public enum ChannelType {
+        CHAT
     }
 }

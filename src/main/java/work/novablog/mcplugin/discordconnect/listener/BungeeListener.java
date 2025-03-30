@@ -58,7 +58,8 @@ public class BungeeListener implements Listener {
 
         MarkComponent[] components = MarkdownConverter.fromMinecraftMessage(message, '&');
         String convertedMessage = MarkdownConverter.toDiscordMessage(components);
-        botManager.sendMessageToChatChannel(
+        botManager.sendMessageToChannel(
+                BotManager.ChannelType.CHAT,
                 toDiscordFormat.replace("{server}", server.getInfo().getName())
                         .replace("{sender}", sender.getDisplayName())
                         .replace("{message}", convertedMessage)
@@ -67,7 +68,8 @@ public class BungeeListener implements Listener {
 
     @EventHandler
     public void onLogin(LoginEvent e) {
-        botManager.sendMessageToChatChannel(
+        botManager.sendMessageToChannel(
+                BotManager.ChannelType.CHAT,
                 Message.userActivity.toString(),
                 null,
                 Message.joined.toString().replace("{name}", e.getConnection().getName()),
@@ -90,7 +92,8 @@ public class BungeeListener implements Listener {
 
     @EventHandler
     public void onLogout(PlayerDisconnectEvent e) {
-        botManager.sendMessageToChatChannel(
+        botManager.sendMessageToChannel(
+                BotManager.ChannelType.CHAT,
                 Message.userActivity.toString(),
                 null,
                 Message.left.toString().replace("{name}", e.getPlayer().getName()),
@@ -115,7 +118,8 @@ public class BungeeListener implements Listener {
     public void onSwitch(ServerSwitchEvent e) {
         if (hiddenServers.contains(e.getPlayer().getServer().getInfo().getName())) return;
 
-        botManager.sendMessageToChatChannel(
+        botManager.sendMessageToChannel(
+                BotManager.ChannelType.CHAT,
                 Message.userActivity.toString(),
                 null,
                 Message.serverSwitched.toString()
