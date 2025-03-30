@@ -4,6 +4,7 @@ import com.github.ucchyocean.lc3.LunaChatAPI;
 import com.github.ucchyocean.lc3.LunaChatBungee;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterAPI;
 import com.gmail.necnionch.myplugin.n8chatcaster.bungee.N8ChatCasterPlugin;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -11,6 +12,7 @@ import net.md_5.bungee.config.YamlConfiguration;
 import org.bstats.bungeecord.Metrics;
 import work.novablog.mcplugin.discordconnect.command.bungee.BungeeCommand;
 import work.novablog.mcplugin.discordconnect.listener.BungeeListener;
+import work.novablog.mcplugin.discordconnect.listener.BungeeLoggingListener;
 import work.novablog.mcplugin.discordconnect.listener.ChatCasterListener;
 import work.novablog.mcplugin.discordconnect.listener.LunaChatListener;
 import work.novablog.mcplugin.discordconnect.util.BotManager;
@@ -25,10 +27,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 
 public final class DiscordConnect extends Plugin {
@@ -42,6 +42,7 @@ public final class DiscordConnect extends Plugin {
 
     private BotManager botManager;
     private BungeeListener bungeeListener;
+    private BungeeLoggingListener bungeeLoggingListener;
     private LunaChatListener lunaChatListener;
     private ChatCasterListener chatCasterListener;
 
@@ -67,7 +68,8 @@ public final class DiscordConnect extends Plugin {
      * configを読み直してbotを再起動する
      */
     public void reload() {
-        botManager.sendMessageToChatChannel(
+        botManager.sendMessageToChannel(
+                BotManager.ChannelType.ALL,
                 Message.serverActivity.toString(),
                 null,
                 Message.botRestarting.toString(),
@@ -131,10 +133,28 @@ public final class DiscordConnect extends Plugin {
         String toMinecraftFormat = config.getString("toMinecraftFormat");
         String toDiscordFormat = config.getString("toDiscordFormat");
         List<String> hiddenServers = config.getStringList("hiddenServers");
+        long consoleChannelId = config.getLong("consoleChannel.channelId");
+        List<Long> consoleChannelIds = consoleChannelId == -1 ?
+                Collections.emptyList() :
+                Collections.singletonList(consoleChannelId);
+        String consoleChannelLogFormat = config.getString("consoleChannel.logFormat");
+        boolean allowConsoleChannelDispatchCommand = config.getBoolean("consoleChannel.allowDispatchCommand");
 
-        botManager = new BotManager(getLogger(), token, chatChannelIds, playingGameName, toMinecraftFormat);
+        botManager = new BotManager(
+                getLogger(),
+                token,
+                chatChannelIds,
+                consoleChannelIds,
+                allowConsoleChannelDispatchCommand,
+                playingGameName,
+                toMinecraftFormat
+        );
         bungeeListener = new BungeeListener(botManager, toDiscordFormat, hiddenServers);
         getProxy().getPluginManager().registerListener(this, bungeeListener);
+        if (!consoleChannelIds.isEmpty()) {
+            bungeeLoggingListener = new BungeeLoggingListener(botManager, consoleChannelLogFormat);
+            ProxyServer.getInstance().getLogger().addHandler(bungeeLoggingListener);
+        }
         if (lunaChatAPI != null) {
             lunaChatListener = new LunaChatListener(botManager, toDiscordFormat);
             getProxy().getPluginManager().registerListener(this, lunaChatListener);
@@ -177,6 +197,7 @@ public final class DiscordConnect extends Plugin {
 
     private void shutdown() {
         if (bungeeListener != null) getProxy().getPluginManager().unregisterListener(bungeeListener);
+        if (bungeeLoggingListener != null) ProxyServer.getInstance().getLogger().removeHandler(bungeeLoggingListener);
         if (lunaChatListener != null) getProxy().getPluginManager().unregisterListener(lunaChatListener);
         if (chatCasterListener != null) getProxy().getPluginManager().unregisterListener(chatCasterListener);
         botManager.botShutdown();

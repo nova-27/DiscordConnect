@@ -20,6 +20,7 @@ public enum Message {
     updateCheckFailed,
     pluginIsLatest,
 
+    dispatchCommand,
     bungeeCommandDenied,
     bungeeCommandNotFound,
 
