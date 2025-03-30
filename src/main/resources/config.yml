@@ -12,6 +12,7 @@ hiddenServers:
 consoleChannel:
   channelId: -1
   logFormat: "[{time} {level}] {message}"
+  allowDispatchCommand: true
 
 updateCheck: true
 # この値は変更しないでください！ (Don't change the value!)

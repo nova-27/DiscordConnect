@@ -18,6 +18,7 @@ import work.novablog.mcplugin.discordconnect.listener.DiscordListener;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -40,6 +41,7 @@ public class BotManager implements EventListener {
             @NotNull String token,
             @NotNull List<Long> chatChannelIds,
             @NotNull List<Long> consoleChannelIds,
+            boolean allowConsoleChannelDispatchCommand,
             @NotNull String playingGameName,
             @NotNull String toMinecraftFormat
     ) {
@@ -48,8 +50,12 @@ public class BotManager implements EventListener {
         //ログインする
         try {
             bot = JDABuilder.createLight(token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
-                    .addEventListeners(this, new DiscordListener(chatChannelIds, toMinecraftFormat))
-                    .build();
+                    .addEventListeners(this, new DiscordListener(
+                            logger,
+                            chatChannelIds,
+                            allowConsoleChannelDispatchCommand ? consoleChannelIds : Collections.emptyList(),
+                            toMinecraftFormat
+                    )).build();
             isActive = true;
         } catch (InvalidTokenException e) {
             this.logger.severe(Message.invalidToken.toString());

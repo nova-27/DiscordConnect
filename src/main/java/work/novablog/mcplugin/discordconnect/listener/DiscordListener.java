@@ -9,21 +9,49 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
+import work.novablog.mcplugin.discordconnect.util.Message;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 public class DiscordListener extends ListenerAdapter {
+    private final Logger logger;
     private final List<Long> chatChannelIds;
+    private final List<Long> dispatchCommandChannelIds;
     private final String toMinecraftFormat;
 
-    public DiscordListener(@NotNull List<Long> chatChannelIds, @NotNull String toMinecraftFormat) {
+    public DiscordListener(
+            @NotNull Logger logger,
+            @NotNull List<Long> chatChannelIds,
+            @NotNull List<Long> dispatchCommandChannelIds,
+            @NotNull String toMinecraftFormat
+    ) {
+        this.logger = logger;
         this.chatChannelIds = chatChannelIds;
+        this.dispatchCommandChannelIds = dispatchCommandChannelIds;
         this.toMinecraftFormat = toMinecraftFormat;
     }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
+
+        if (dispatchCommandChannelIds.contains(event.getChannel().getIdLong())) {
+            // BungeeCordでコマンド実行
+            logger.info(
+                    Message.dispatchCommand.toString()
+                            .replace("{sender}", event.getAuthor().getName())
+                            .replace("{command}", event.getMessage().getContentRaw())
+            );
+
+            ProxyServer.getInstance().getPluginManager().dispatchCommand(
+                    ProxyServer.getInstance().getConsole(),
+                    event.getMessage().getContentRaw()
+            );
+
+            return;
+        }
+
         if (!chatChannelIds.contains(event.getChannel().getIdLong()))
             return;
 

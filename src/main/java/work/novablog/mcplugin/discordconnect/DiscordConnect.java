@@ -138,12 +138,14 @@ public final class DiscordConnect extends Plugin {
                 Collections.emptyList() :
                 Collections.singletonList(consoleChannelId);
         String consoleChannelLogFormat = config.getString("consoleChannel.logFormat");
+        boolean allowConsoleChannelDispatchCommand = config.getBoolean("consoleChannel.allowDispatchCommand");
 
         botManager = new BotManager(
                 getLogger(),
                 token,
                 chatChannelIds,
                 consoleChannelIds,
+                allowConsoleChannelDispatchCommand,
                 playingGameName,
                 toMinecraftFormat
         );
