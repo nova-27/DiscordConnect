@@ -125,14 +125,14 @@ public class BotManager implements EventListener {
 
             //channelSendersの設定
             for (ChannelType type : channelIds.keySet()) {
-                List<Long> channelIds = this.channelIds.get(type);
+                List<Long> ids = this.channelIds.get(type);
                 List<DiscordSender> senders = channelSenders.get(type);
 
-                for (long channelId : channelIds) {
-                    TextChannel channel = bot.getTextChannelById(channelId);
+                for (long id : ids) {
+                    TextChannel channel = bot.getTextChannelById(id);
 
                     if (channel == null) {
-                        logger.warning(Message.channelNotFound.toString().replace("{id}", String.valueOf(channelId)));
+                        logger.warning(Message.channelNotFound.toString().replace("{id}", String.valueOf(id)));
                         continue;
                     }
 
